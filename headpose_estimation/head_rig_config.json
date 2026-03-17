@@ -1,0 +1,23 @@
+{
+  "head_tag_ids": [4, 3, 0, 1, 2],
+  "head_tag_size_m": {
+    "4": 0.04,
+    "3": 0.04,
+    "0": 0.04,
+    "1": 0.04,
+    "2": 0.04
+  },
+  "ref_tag_id": 0,
+  "parent_map": {
+    "3": 0,
+    "1": 0,
+    "4": 3,
+    "2": 1
+  },
+  "head_order_left_to_right": [4, 3, 0, 1, 2],
+  "head_origin_tag_id": 0,
+  "back_tag_id": 8,
+  "back_tag_size_m": 0.08,
+  "back_tag_mount": "upright_on_back",
+  "tag_family": "tag36h11"
+}

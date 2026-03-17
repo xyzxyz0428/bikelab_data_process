@@ -1,0 +1,28 @@
+=== Basic summary ===
+rows: 637
+
+status counts:
+status
+ok    637
+
+num_head_tags counts:
+num_head_tags
+2    637
+
+visible_head_tag_ids counts:
+visible_head_tag_ids
+3 4    637
+
+=== Angle stats (back_head) ===
+back_head_roll_deg: mean=-15.393, std=1.224, min=-17.515, max=-11.801, peak_to_peak=5.714
+back_head_pitch_deg: mean=-18.202, std=1.275, min=-20.628, max=-15.757, peak_to_peak=4.871
+back_head_yaw_deg: mean=52.056, std=1.642, min=49.748, max=57.652, peak_to_peak=7.904
+
+=== head_rmse_px stats ===
+mean=0.174, median=0.174, std=0.018, min=0.122, max=0.247, p95=0.203
+
+Saved:
+  analysis_left43/angles.png
+  analysis_left43/rmse_and_tags.png
+  analysis_left43/histograms.png
+  analysis_left43/filtered_data.csv

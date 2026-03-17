@@ -1,0 +1,8 @@
+image_saver_node:
+  ros__parameters:
+    qos_overrides:
+      /camera/image_raw:
+        subscription:
+          reliability: best_effort
+          history: keep_last
+          depth: 10

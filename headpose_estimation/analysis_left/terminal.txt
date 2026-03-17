@@ -1,0 +1,30 @@
+ python3 analyze_headpose_csv.py   --csv analysis_left/headpose_output_left.csv   --only-ok   --min-head-tags 2   --max-rmse 5  --out-dir analysis_left/
+
+=== Basic summary ===
+rows: 464
+
+status counts:
+status
+ok    464
+
+num_head_tags counts:
+num_head_tags
+2    464
+
+visible_head_tag_ids counts:
+visible_head_tag_ids
+0 3    464
+
+=== Angle stats (back_head) ===
+back_head_roll_deg: mean=-7.301, std=1.542, min=-9.471, max=-3.616, peak_to_peak=5.855
+back_head_pitch_deg: mean=6.217, std=1.150, min=4.168, max=8.106, peak_to_peak=3.937
+back_head_yaw_deg: mean=66.992, std=0.552, min=65.770, max=68.214, peak_to_peak=2.444
+
+=== head_rmse_px stats ===
+mean=0.481, median=0.480, std=0.023, min=0.413, max=0.544, p95=0.518
+
+Saved:
+  analysis_left/angles.png
+  analysis_left/rmse_and_tags.png
+  analysis_left/histograms.png
+  analysis_left/filtered_data.csv
