@@ -16,22 +16,19 @@ The goal of this project is to convert raw experimental recordings into structur
 
 `bike_lab_data_process` is designed for multimodal data collected on an instrumented bicycle platform. Depending on the experiment, the raw data may include:
 
-- camera videos / image streams  
-- GNSS / GPS data exported from ROS bags  
+- Eyetracker scene camera gaze behavior data and imu data.    
+- GNSS data exported from ROS bags  
 - LiDAR point clouds  
-- head-mounted camera images for head pose estimation  
-- timestamped CSV files from different acquisition pipelines  
-- decoded bicycle interface data such as steering angle, speed, IMU, and payload-related signals  
+- Camera images for head pose estimation and timestamped CSV files
+- Standalone imu sensor data
+- Wheel speed sensor data and powermeter sensor data
+- Steering angle data
 
 At the current stage, this project supports:
 
-- extracting and trimming valid data intervals  
-- converting ROS bag data into CSV tables  
-- merging selected sensor outputs into spreadsheet-friendly files  
-- preparing LiDAR-to-LiDAR extrinsic calibration for downstream LiDAR processing  
-- estimating head pose from AprilTag-based helmet rig observations  
-- documenting LiDAR processing configuration files for reproducibility  
-
+- extracting and trimming valid data intervals, converting ROS bag data into CSV tables, merging selected sensor outputs into spreadsheet-friendly files  
+- estimating head pose from AprilTag-based helmet rigid observations  
+- preparing LiDAR-to-LiDAR extrinsic calibration and rostopic generation from pcap file for downstream LiDAR processing ,documenting LiDAR processing configuration files for reproducibility  
 ---
 
 ## Repository structure
@@ -52,13 +49,10 @@ bikelab_data_process/
   Scripts for exporting, trimming, merging, and organizing raw multimodal data.
 
 - `headpose_estimation/`  
-  Scripts for intrinsic calibration, helmet rig calibration, frame-based head pose estimation, and result analysis.
+  Scripts for intrinsic calibration, helmet rig calibration, frame-based head pose estimation, and result analysis.  
 
-- `lidar2lidar_calibration/`  
-  Scripts used during **LiDAR data process preparation** to estimate LiDAR-to-LiDAR extrinsic transforms. The resulting calibration can then be converted into YAML or related configuration files for the downstream LiDAR processing pipeline.
-
-- `lidar_data_process/`  
-  This workflow is documented in this README, but it is **not currently released as a full open-source code folder** in this repository because part of the LiDAR pipeline depends on a proprietary vendor SDK.
+- `lidar_data_preprocess/`  
+   Scripts used during **lidar_data_preprocess** includes estimation of LiDAR-to-LiDAR extrinsic transforms and generation of rostopic lidar_data_preprocess for the downstream LiDAR processing pipeline. The resulting calibration can then be converted into YAML or related configuration files, which is required by a proprietary vendor SDK.
 
 ---
 
