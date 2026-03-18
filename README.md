@@ -524,25 +524,12 @@ If you use this repository in your research, please cite the corresponding datas
 ```bibtex
 @misc{bike_lab_data_process,
   title        = {bike_lab_data_process: Processing tools for the Bike Lab dataset},
-  author       = {Author names to be added},
+  author       = {Xinyu Zhang},
   year         = {2026},
   howpublished = {GitHub repository},
   note         = {Associated with the Bike Lab open-source dataset publication}
 }
 ```
-
----
-
-## License
-
-Please add your intended open-source license here, for example:
-
-- MIT
-- BSD-3-Clause
-- Apache-2.0
-
-> Note: third-party vendor SDK components are **not** covered by the repository license and must be obtained separately from the vendor.
-
 ---
 
 ## Contact
