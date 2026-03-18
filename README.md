@@ -340,17 +340,6 @@ python3 calibrate_helmet_rig.py \
   --output rig_calib.json
 ```
 
-Example output:
-
-```text
-tag 1: 20 samples
-tag 3: 12 samples
-tag 4: 4 samples
-tag 5: 5 samples
-used_images = 31
-saved rig calibration to rig_calib.json
-```
-
 **Input**
 - calibrated `camera.json`
 - helmet/tag configuration file `head_rig_config.json`
@@ -523,8 +512,8 @@ If you use this repository in your research, please cite the corresponding datas
 
 ```bibtex
 @misc{bike_lab_data_process,
-  title        = {bike_lab_data_process: Processing tools for the Bike Lab dataset},
-  author       = {Xinyu Zhang},
+  title        = {A mutimodal instrumented bicycle platform and dataset capturing urban environments, cyclis gaze,rider inputs, and bicycle dynamics},
+  author       = {Xinyu Zhang, Yikai Zeng, Meng Wang},
   year         = {2026},
   howpublished = {GitHub repository},
   note         = {Associated with the Bike Lab open-source dataset publication}
