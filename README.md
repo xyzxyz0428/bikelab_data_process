@@ -52,7 +52,7 @@ bikelab_data_process/
   Scripts for intrinsic calibration, helmet rig calibration, frame-based head pose estimation, and result analysis.  
 
 - `lidar_data_preprocess/`  
-   Scripts used during **lidar_data_preprocess** includes estimation of LiDAR-to-LiDAR extrinsic transforms and generation of rostopic lidar_data_preprocess for the downstream LiDAR processing pipeline. The resulting calibration can then be converted into YAML or related configuration files, which is required by a proprietary vendor SDK.
+   Scripts for the estimation of LiDAR-to-LiDAR extrinsic transforms and SDK link for generation of rostopic lidar_data_preprocess for the downstream LiDAR processing pipeline. The resulting calibration can then be converted into YAML or related configuration files, which is required by a proprietary vendor SDK. 
 
 ---
 
@@ -60,17 +60,12 @@ bikelab_data_process/
 
 This workflow has been tested with:
 
-- **ROS 2:** Humble  
 - **Ubuntu:** 22.04  
-
+- **Python 3**  
 Additional tools used in the workflow include:
 
-- **Python 3**  
 - **ffmpeg**  
 - common Python scientific packages required by the scripts  
-- an optional Python virtual environment for head pose estimation  
-
----
 
 ## Additional dependency
 
@@ -105,38 +100,11 @@ ros2 unbag --help
 
 ### 3. Prepare Python environment
 
-Depending on your setup, you may use either a system Python installation or a virtual environment. For head pose estimation, a dedicated environment is recommended.
-
-Example:
-
-```bash
-python3 -m venv ~/venvs/headpose
-source ~/venvs/headpose/bin/activate
-```
-
-Install the required Python packages according to the repository dependency files or the imports used by each script.
+Depending on your setup, you may use either a system Python installation or a virtual environment. For head pose estimation, a dedicated environment is recommended. Install the required Python packages according to the repository dependency files or the imports used by each script.
 
 ---
 
 ## Processing pipeline overview
-
-The current workflow is organized into three parts:
-
-1. **Raw data processing**  
-2. **Head pose estimation**  
-3. **LiDAR data processing**  
-
-A typical processing sequence is:
-
-1. export or prepare raw sensor data  
-2. determine the valid time interval for a recording  
-3. convert data into analysis-ready intermediate files  
-4. run calibration steps  
-5. estimate target quantities such as head pose  
-6. prepare LiDAR extrinsic calibration and configuration files  
-7. validate outputs and inspect quality metrics  
-
----
 
 # 1. Raw data processing
 
@@ -145,27 +113,21 @@ This part prepares raw recordings for downstream analysis.
 ## 1.1 Typical original data files
 
 A typical raw export directory may contain files such as:
-
 ```text
-ubx_nav_pvt.csv
 steering_angle_20260310_170336.csv
 speed_decoded_20260310_170338.csv
 rally_payload_decoded_20260310_170337.csv
 imu_20260310_170336.csv
 rosbag2_2026_03_10-17_10_36/
 ```
-
+Depending on the experiment and the export stage, additional files may also be present.
 These files typically represent:
 
-- `ubx_nav_pvt.csv` – GNSS navigation solution exported from ROS bag data  
 - `steering_angle_*.csv` – decoded steering angle measurements  
 - `speed_decoded_*.csv` – decoded wheel speed or speed sensor output  
 - `rally_payload_decoded_*.csv` – decoded payload / interface data  
 - `imu_*.csv` – inertial measurement data  
-- `rosbag2_*` – raw ROS 2 bag folder containing recorded topics  
-
-Depending on the experiment and the export stage, additional files may also be present.
-
+- `rosbag2_*` – raw ROS 2 bag folder containing recorded GNSS topics  
 ---
 
 ## 1.2 Camera data
@@ -208,7 +170,7 @@ Then:
 Use `ros2_unbag` to export the desired topic from a ROS 2 `.db3` bag file:
 
 ```bash
-ros2 unbag /mnt/bikelab_data/IB_Lab/lidar/20260226_164803/20260226_164803_0.db3   --output-dir /mnt/bikelab_data/IB_Lab/lidar/20260226_164803/exports_csv   --naming "%name"   --export /ubx_nav_pvt:table/csv@single_file
+ros2 unbag /raw_data_process/source/rosbag2_2026_03_10-17_10_36/rosbag2_2026_03_10-17_10_36_0.db3   --output-dir /raw_data_process/source   --naming "%name"   --export /ubx_nav_pvt:table/csv@single_file
 ```
 
 **Input**
@@ -230,7 +192,7 @@ ros2 unbag /mnt/bikelab_data/IB_Lab/lidar/20260226_164803/20260226_164803_0.db3 
 After selecting the valid time interval, merge relevant CSV files and export them as a single Excel workbook.
 
 ```bash
-python3 merge_bikelab_csvs_to_xlsx.py   -i /mnt/bikelab_data/IB_Lab/bike_interface_data/20260310   -o bike_interface_merged.xlsx   --start-unix-ns 1773159067578250000   --end-unix-ns 1773159563211650000
+python3 /raw_data_process/script/merge_bikelab_csvs_to_xlsx.py   -i /raw_data_process/source   -o /raw_data_process/result/bike_interface_merged.xlsx   --start-unix-ns 1773159067578250000   --end-unix-ns 1773159563211650000
 ```
 
 **Input**
@@ -256,13 +218,17 @@ This part covers the full workflow from calibration image collection to final he
 ### Step 1: Save images for camera calibration
 
 Capture images from a ROS topic at a fixed interval:
-
+on rpi computer2 
 ```bash
-python3 save_calib_images.py --ros-args -p sec_per_frame:=1.0 -p max_images:=60 -p output_dir:=/home/pi/calib_images
+ros2 run camera_streamer camera_publisher
+```
+on local workstation
+```bash
+python3 /headpose_estimation/camera_calibration/save_calib_images.py --ros-args -p sec_per_frame:=1.0 -p max_images:=60 -p output_dir:=/headpose_estimation/camera_calibration/calib_images
 ```
 
 **Output**
-- calibration images saved to `/home/pi/calib_images`
+- calibration images saved to `/headpose_estimation/camera_calibration/calib_images`
 
 **Purpose**
 - collect images for intrinsic camera calibration  
@@ -271,10 +237,10 @@ python3 save_calib_images.py --ros-args -p sec_per_frame:=1.0 -p max_images:=60 
 
 ## 2.2 Run camera intrinsic calibration
 
-### Step 1: Estimate camera intrinsics and generate `camera.json`
+### Step 1: Estimate camera intrinsics with chessboardand generate `camera.json`
 
 ```bash
-python3 calibrate_camera_offline.py --image-dir calib_images --cols 5 --rows 7 --square-size-m 0.031 --output-json camera.json --preview-dir calib_preview --model pinhole
+python3 /headpose_estimation/camera_calibration/calibrate_camera_offline.py --image-dir calib_images --cols 5 --rows 7 --square-size-m 0.031 --output-json /headpose_estimation/camera_calibration/camera.json --preview-dir /headpose_estimation/camera_calibration/calib_preview/ --model pinhole
 ```
 
 Example output:
@@ -290,12 +256,12 @@ Saved to: camera.json
 ```
 
 **Notes**
-- After calibration, copy the estimated intrinsic matrix `k` and distortion parameters `dist` into the final `camera.json` used by the real pipeline if needed.  
+- After calibration, copy the estimated intrinsic matrix `k` and distortion parameters `dist` into the final `camera.json` under /headpose_estimation/scripts/camera.json used by the real pipeline if needed.  
 - Inspect the reprojection error before accepting the calibration.  
 
 **Output**
 - `camera.json`  
-- optional preview images in `calib_preview/`  
+- optional preview images in `/headpose_estimation/camera_calibratino/calib_preview/`  
 
 ---
 
@@ -304,7 +270,7 @@ Saved to: camera.json
 ### Step 1: Estimate the rigid helmet-camera relationship and generate `rig_calib.json`
 
 ```bash
-python3 calibrate_helmet_rig.py --camera camera.json --config head_rig_config.json --image-dir calibration_images --output rig_calib.json
+python3 /headpose_estimation/scripts/calibrate_helmet_rig.py --camera /headpose_estimation/scripts/camera.json --config /headpose_estimation/scripts/head_rig_config.json --image-dir /headpose_estimation/source/calibration_images --output /headpose_estimation/scripts/rig_calib.json
 ```
 
 Example output:
@@ -336,7 +302,7 @@ saved rig calibration to rig_calib.json
 ### Step 1: Estimate frame-wise head pose and export CSV
 
 ```bash
-python3 estimate_headpose_from_frames.py --camera camera.json --config head_rig_config.json --rig-calib rig_calib.json --frame-dir frames_static --timestamps-csv frames_static/timestamps.csv --output-csv headpose_output.csv --neutral-frame nature.png
+python3 /headpose_estimation/scripts/estimate_headpose_from_frames.py --camera /headpose_estimation/scripts/camera.json --config /headpose_estimation/scripts/head_rig_config.json --rig-calib /headpose_estimation/scripts/rig_calib.json --frame-dir /headpose_estimation/scource/frames_static --timestamps-csv /headpose_estimation/scource/frames_static/timestamps.csv --output-csv /headpose_estimation/result/headpose_output.csv --neutral-frame /headpose_estimation/source/nature.png
 ```
 
 Example output:
@@ -367,7 +333,7 @@ saved to headpose_output.csv
 
 ```bash
 source ~/venvs/headpose/bin/activate
-python3 analyze_headpose_csv.py   --csv headpose_output.csv   --only-ok   --min-head-tags 2   --max-rmse 5
+python3 /headpose_estimation/scripts/analyze_headpose_csv.py   --csv /headpose_estimation/result/headpose_output.csv   --only-ok   --min-head-tags 2   --max-rmse 5
 ```
 
 **Purpose**
@@ -393,7 +359,7 @@ Before running the downstream LiDAR processing pipeline, LiDAR-to-LiDAR extrinsi
 ### Step 1: Run LiDAR-to-LiDAR calibration
 
 ```bash
-python3 lidar2lidar_calibration.py   --source_csv indoor/b8.csv   --target_csv indoor/f8.csv   --skip_header   --voxel_size 0.05   --cols 0 1 2
+python3 /lidar2lidar_calibration/script/lidar2lidar_calibration.py   --source_csv /lidar2lidar_calibration/source/indoor/b8.csv   --target_csv /lidar2lidar_calibration/source/indoor/f8.csv   --skip_header   --voxel_size 0.05   --cols 0 1 2
 ```
 
 **Input**
@@ -453,43 +419,8 @@ This approach documents the experimental setup and preserves as much reproducibi
 | Module | Main input | Main output |
 |---|---|---|
 | raw_data_process | video, ROS bag, CSV files | frames, exported CSV, merged XLSX |
-| headpose_estimation | images, camera config, rig config, timestamps | `camera.json`, `rig_calib.json`, `headpose_output.csv` |
-| lidar_data_process preparation | source/target LiDAR CSV | rigid transform and calibration values for YAML / config generation |
-| lidar_data_process | vendor SDK, LiDAR data, YAML configs | processed LiDAR outputs depending on the licensed pipeline |
-
----
-
-## Recommended workflow for dataset publication
-
-For each recording session, a typical reproducible workflow is:
-
-1. extract camera frames from raw video  
-2. identify the valid time interval  
-3. trim frames and timestamps accordingly  
-4. export GPS or other ROS topics from bag files  
-5. merge selected CSV outputs into structured tables  
-6. calibrate the camera and helmet rig  
-7. estimate head pose  
-8. analyze quality metrics and retain valid results only  
-9. run LiDAR-to-LiDAR calibration as preparation for LiDAR configuration  
-10. generate or document LiDAR calibration YAML and processing settings  
-
-This makes it easier to prepare consistent public releases for a dataset paper.
-
----
-
-## Reproducibility notes
-
-To improve reproducibility, we recommend storing the following for each processed sequence:
-
-- raw recording identifier  
-- start and end timestamps used for valid interval selection  
-- calibration files (`camera.json`, `rig_calib.json`)  
-- LiDAR processing configuration files  
-- LiDAR extrinsic calibration results used to generate YAML or config files  
-- script version or commit hash  
-- output quality metrics  
-- notes on failed frames or excluded segments  
+| headpose_estimation | images, camera config, rig config, timestamps | `camera.json`, `rig_calib.json`, `headpose_output.csv`,analysis folder|
+| lidar_data_process preparation | source/target LiDAR CSV , vendor latest SDK,|  usr configs, YAML configs, rostopic generated,|
 
 ---
 
@@ -501,8 +432,7 @@ At present, the documented modules are:
 
 - raw data processing  
 - head pose estimation  
-- LiDAR data processing configuration support  
-- LiDAR-to-LiDAR calibration for LiDAR process preparation  
+- LiDAR process preparation  
 
 Additional modules, cleanup, dependency pinning, and example datasets may be added in future releases.
 
@@ -513,20 +443,14 @@ Additional modules, cleanup, dependency pinning, and example datasets may be add
 If you use this repository in your research, please cite the corresponding dataset paper once published.
 
 ```bibtex
-@misc{bike_lab_data_process,
-  title        = {bike_lab_data_process: Processing tools for the Bike Lab dataset},
-  author       = {Author names to be added},
-  year         = {2026},
-  howpublished = {GitHub repository},
-  note         = {Associated with the Bike Lab open-source dataset publication}
-}
+TDTDTDTDTDTD
 ```
 
 ---
 
 ## License
 
-Please add your intended open-source license here, for example:
+TDTDTDTDTD Please add your intended open-source license here, for example:
 
 - MIT  
 - BSD-3-Clause  
@@ -538,4 +462,5 @@ Please add your intended open-source license here, for example:
 
 ## Contact
 
-For questions, issues, or collaboration requests, please open an issue in this repository or contact the maintainers.
+For questions, issues, or collaboration requests, please open an issue in this repository or contact the maintainers. 
+Xinyu Zhang (xinyu.zhang@tu-dresden.de)
