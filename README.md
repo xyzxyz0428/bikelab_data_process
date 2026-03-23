@@ -180,7 +180,7 @@ Then:
 
 ---
 
-## 1.3 GPS processing
+## 1.4 GPS processing
 
 ### Step 1: Export GPS topic from ROS 2 bag
 
@@ -202,7 +202,7 @@ ros2 unbag /raw_data_process/source/rosbag2_2026_03_10-17_10_36/rosbag2_2026_03_
 
 ---
 
-## 1.4 Merge CSV files into XLSX
+## 1.5 Merge CSV files into XLSX
 
 ### Step 1: Merge selected CSV files over the valid time interval
 
@@ -222,9 +222,16 @@ python3 /raw_data_process/script/merge_bikelab_csvs_to_xlsx.py   -i /raw_data_pr
 **Typical operations**
 - extract only the valid time interval  
 - keep selected columns  
-- export a compact spreadsheet for inspection or annotation  
+- export a compact spreadsheet for inspection or annotation
 
 ---
+## 1.6 Analysis
+Run the validation suite on the merged XLSX to generate dataset-paper figures and summary tables, including stream health, timing consistency, LiDAR frame health, and optional behavioral sanity-check plots.
+```bash
+python raw_data_process/script/dataset_paper_validation_suite_v3.py \
+  --xlsx raw_data_process/result/bike_interface_merged_with_lidar.xlsx \
+  --outdir raw_data_process/result/validation_outputs
+```
 
 # 2. Head pose estimation
 
