@@ -145,6 +145,22 @@ ffmpeg -i video.avi frames/frame_%06d.png
 
 **Output**
 - extracted image sequence in the `frames/` directory
+### Step 2: Determine valid start and end time
+
+After frame extraction, identify the valid temporal interval of the recording.
+
+Then:
+
+- delete invalid frames outside the selected interval  
+- remove corresponding rows from the timestamp CSV file  
+
+**Purpose**
+- keep only the synchronized and valid portion of the dataset  
+- ensure consistent downstream processing  
+
+> This step is currently manual or semi-manual, depending on the workflow used for a given dataset release
+
+---
 
 ## 1.3 lidar data
 
@@ -162,21 +178,6 @@ Use `tshrk` to extract timestamp:
 
 **Output**
 - extracted csv files in "lidar_packet_csvs \" directory
-
-### Step 2: Determine valid start and end time
-
-After frame extraction, identify the valid temporal interval of the recording.
-
-Then:
-
-- delete invalid frames outside the selected interval  
-- remove corresponding rows from the timestamp CSV file  
-
-**Purpose**
-- keep only the synchronized and valid portion of the dataset  
-- ensure consistent downstream processing  
-
-> This step is currently manual or semi-manual, depending on the workflow used for a given dataset release.
 
 ---
 
