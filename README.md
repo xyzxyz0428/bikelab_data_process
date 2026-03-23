@@ -146,6 +146,23 @@ ffmpeg -i video.avi frames/frame_%06d.png
 **Output**
 - extracted image sequence in the `frames/` directory
 
+## 1.3 lidar data
+
+### Step 1: Convert pcap to csv for timestamp exctraction
+
+Use `tshrk` to extract timestamp:
+
+```bash
+/raw_data_process/source/extract_lidar_packet_timestamps.sh your_capture.pcap lidar_packet_csvs \
+    192.168.1.200 192.168.1.201 192.168.1.202
+```
+
+**Input**
+- your_capture.pcap
+
+**Output**
+- extracted csv files in "lidar_packet_csvs \" directory
+
 ### Step 2: Determine valid start and end time
 
 After frame extraction, identify the valid temporal interval of the recording.
