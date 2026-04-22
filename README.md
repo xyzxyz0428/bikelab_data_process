@@ -430,7 +430,7 @@ However, to support reproducibility, this project will still publish selected no
 For exporting the RViz perception topic from a ROS1 bag file to Excel in timestamp order, use:
 
 ```bash
-python3 export_markerarray_to_excel.py your_file.bag --topic /perception_info_rviz --output perception_info_rviz.xlsx
+python3 export_markerarray_to_excel.py your_file.bag --topic /perception_info_rviz --output perception_info_rviz.xlsx   --max-rows 1000000
 
 ## 3.3 Notes for users
 
