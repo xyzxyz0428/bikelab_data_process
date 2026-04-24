@@ -370,6 +370,280 @@ python3 /headpose_estimation/scripts/analyze_headpose_csv.py   --csv /headpose_e
 - only keep successful estimates  
 - require at least 2 detected head tags  
 - reject frames with RMSE above 5 px  
+好，下面给你一版 **短一点、README风格统一** 的补充内容，可以直接接在你现有 `2.5 Analyze head pose results` 后面。
+
+---
+
+## 2.6 Build AprilTag world baseline
+
+### Step 1: Generate `apriltag_baseline.json`
+
+```bash
+python3 /headpose_estimation/scripts/build_apriltag_baseline_from_back_camera.py \
+  --camera-json /headpose_estimation/scripts/camera.json \
+  --frame-dir /headpose_estimation/source/baseline_frames \
+  --timestamps-csv /headpose_estimation/source/baseline_timestamps.csv \
+  --tag-family tag36h11 \
+  --default-size-m 0.10 \
+  --ref-tag-id 17 \
+  --target-tag-ids 22,23,24,25,26,15,16,17,19,20,9,10,11,12,13,14 \
+  --output-json /headpose_estimation/result/apriltag_baseline.json
+```
+
+**Output**
+
+* `apriltag_baseline.json`
+
+**Purpose**
+
+* define world frame `W`
+* estimate target tag positions in world coordinates
+
+---
+
+## 2.7 Extract scene frame timestamps
+
+### Step 1: Generate `scene_timestamps.csv`
+
+```bash
+python3 /headpose_estimation/scripts/generate_scene_frame_timestamps.py \
+  --recording-g3 /headpose_estimation/source/tobii_recording/recording.g3 \
+  --scene-video /headpose_estimation/source/tobii_recording/scenevideo.mp4 \
+  --out-csv /headpose_estimation/result/scene_timestamps.csv \
+  --out-dir /headpose_estimation/source/scene_frames
+```
+
+**Output**
+
+* `scene_timestamps.csv`
+* extracted scene frames
+
+**Purpose**
+
+* assign timestamps to Tobii scene frames
+* align Tobii scene frames with other data streams
+
+---
+
+## 2.8 Extract target-tag windows
+
+### Step 1: Generate `tag_time_windows.csv`
+
+```bash
+python3 /headpose_estimation/scripts/extract_tag_time_windows.py \
+  --scene-timestamps-csv /headpose_estimation/result/scene_timestamps.csv \
+  --output-csv /headpose_estimation/result/tag_time_windows.csv
+```
+
+**Output**
+
+* `tag_time_windows.csv`
+
+**Purpose**
+
+* split visible target tags into continuous time windows
+
+---
+
+## 2.9 Validate Tobii 2D gaze
+
+### Step 1: Validate raw gaze
+
+```bash
+python3 /headpose_estimation/scripts/validate_tobii_2d_with_tag_windows_v2.py \
+  --tag-windows-csv /headpose_estimation/result/tag_time_windows.csv \
+  --scene-timestamps-csv /headpose_estimation/result/scene_timestamps.csv \
+  --scene-frame-dir /headpose_estimation/source/scene_frames \
+  --tobii-xlsx /headpose_estimation/source/tobii_raw.xlsx \
+  --recording-g3 /headpose_estimation/source/tobii_recording/recording.g3 \
+  --mode raw \
+  --window-fraction-start 0.3 \
+  --window-fraction-end 0.7 \
+  --output-csv /headpose_estimation/result/tobii_2d_validation_raw.csv
+```
+
+### Step 2: Validate fixation gaze
+
+```bash
+python3 /headpose_estimation/scripts/validate_tobii_2d_with_tag_windows_v2.py \
+  --tag-windows-csv /headpose_estimation/result/tag_time_windows.csv \
+  --scene-timestamps-csv /headpose_estimation/result/scene_timestamps.csv \
+  --scene-frame-dir /headpose_estimation/source/scene_frames \
+  --tobii-xlsx /headpose_estimation/source/tobii_fixation.xlsx \
+  --recording-g3 /headpose_estimation/source/tobii_recording/recording.g3 \
+  --mode fixation \
+  --window-fraction-start 0.3 \
+  --window-fraction-end 0.7 \
+  --output-csv /headpose_estimation/result/tobii_2d_validation_fixation.csv
+```
+
+**Output**
+
+* per-frame CSV
+* summary CSV
+
+**Purpose**
+
+* check whether Tobii 2D gaze falls on the target tag region
+
+---
+
+## 2.10 Estimate `T_H_C1`
+
+### Step 1: Generate `T_H_C1.json`
+
+```bash
+python3 /headpose_estimation/scripts/calibrate_T_H_C1_via_common_board.py \
+  --back-camera-json /headpose_estimation/scripts/camera.json \
+  --back-frame-dir /headpose_estimation/source/back_frames \
+  --back-timestamps-csv /headpose_estimation/source/back_timestamps.csv \
+  --scene-camera-json /headpose_estimation/scripts/scene_camera.json \
+  --scene-frame-dir /headpose_estimation/source/scene_frames \
+  --scene-timestamps-csv /headpose_estimation/result/scene_timestamps.csv \
+  --head-rig-config /headpose_estimation/scripts/head_rig_config.json \
+  --rig-calib-json /headpose_estimation/scripts/rig_calib.json \
+  --board-tag-id 17 \
+  --board-tag-size-m 0.10 \
+  --tag-family tag36h11 \
+  --output-json /headpose_estimation/result/T_H_C1.json
+```
+
+**Output**
+
+* `T_H_C1.json`
+
+**Purpose**
+
+* estimate the rigid transform from head frame to Tobii scene camera
+
+**Note**
+
+* use near-range calibration data for best results
+
+---
+
+## 2.11 Estimate `T_W_C2`
+
+### Step 1: Generate `T_W_C2.json`
+
+```bash
+python3 /headpose_estimation/scripts/estimate_T_W_C2_from_ref17.py \
+  --camera-json /headpose_estimation/scripts/camera.json \
+  --frame-dir /headpose_estimation/source/baseline_frames \
+  --timestamps-csv /headpose_estimation/source/baseline_timestamps.csv \
+  --ref-tag-id 17 \
+  --tag-size-m 0.10 \
+  --output-json /headpose_estimation/result/T_W_C2.json
+```
+
+**Output**
+
+* `T_W_C2.json`
+
+**Purpose**
+
+* estimate back-camera pose in world frame
+
+---
+
+## 2.12 Estimate `T_C1_HUCS` and build transforms
+
+### Step 1: Generate `T_C1_HUCS.json`
+
+```bash
+python3 /headpose_estimation/scripts/estimate_T_C1_HUCS_from_tobii_2d3d.py \
+  --tobii-xlsx /headpose_estimation/source/tobii_raw.xlsx \
+  --recording-g3 /headpose_estimation/source/tobii_recording/recording.g3 \
+  --scene-camera-json /headpose_estimation/scripts/scene_camera.json \
+  --output-json /headpose_estimation/result/T_C1_HUCS.json
+```
+
+### Step 2: Generate `transforms.json`
+
+```bash
+python3 /headpose_estimation/scripts/make_transforms_json.py \
+  --T-W-C2-json /headpose_estimation/result/T_W_C2.json \
+  --T-H-C1-json /headpose_estimation/result/T_H_C1.json \
+  --T-C1-HUCS-json /headpose_estimation/result/T_C1_HUCS.json \
+  --output-json /headpose_estimation/result/transforms.json
+```
+
+**Output**
+
+* `T_C1_HUCS.json`
+* `transforms.json`
+
+**Purpose**
+
+* prepare all transforms for A/B/C evaluation
+
+---
+
+## 2.13 Run A/B/C gaze evaluation
+
+### Step 1: Generate `gaze_abc_eval.csv`
+
+```bash
+python3 /headpose_estimation/scripts/evaluate_gaze_abc_by_windows.py \
+  --tag-windows-csv /headpose_estimation/result/tag_time_windows.csv \
+  --apriltag-baseline-json /headpose_estimation/result/apriltag_baseline.json \
+  --headpose-csv /headpose_estimation/result/headpose_output.csv \
+  --scene-camera-json /headpose_estimation/scripts/scene_camera.json \
+  --transforms-json /headpose_estimation/result/transforms.json \
+  --tobii-raw-xlsx /headpose_estimation/source/tobii_raw.xlsx \
+  --recording-g3 /headpose_estimation/source/tobii_recording/recording.g3 \
+  --window-fraction-start 0.3 \
+  --window-fraction-end 0.7 \
+  --max-sync-dt-ms 20 \
+  --output-csv /headpose_estimation/result/gaze_abc_eval.csv
+```
+
+**Methods**
+
+* A: Tobii `Gaze point 3D`
+* B: Tobii gaze ray
+* C: 2D gaze + head pose
+
+**Output**
+
+* per-row CSV
+* summary CSV
+
+**Purpose**
+
+* compare all gaze methods in the same world frame
+
+---
+
+## 2.14 Review results
+
+Check:
+
+* `tobii_2d_validation_*_summary.csv`
+* `gaze_abc_eval_summary.csv`
+
+Focus on:
+
+* 2D validation quality
+* A/B/C mean / median / p95
+* `headpose_dt_ms`
+* B valid sample count
+
+---
+
+## 2.15 Recommended next data collection
+
+* re-record `T_H_C1` with a **near-range common board**
+* use a **small fixation point** at the target center
+* keep each target for **2–3 s**
+* record:
+
+  * Tobii raw
+  * Tobii fixation
+  * back camera frames
+  * scene frames
+  * head pose
+  * baseline tags
 
 ---
 
