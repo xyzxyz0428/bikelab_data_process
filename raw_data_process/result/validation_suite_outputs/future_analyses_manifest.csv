@@ -1,0 +1,5 @@
+future_item,what_is_needed,status
+T2 / offset-vs-time / offset distribution for NTP/PTP,chrony/ptp4l/phc2sys offset logs recorded during the same acquisition sessions,not derivable from current sensor timestamps alone
+F9 / F10 / T5 ego-motion validation,fused odometry output such as /odometry/filtered or a fused CSV; optional RTK-fixed reference,future
+gaze-object association and interaction metrics (TTC/PET/min lateral distance),LiDAR detection/tracking outputs or manually curated object trajectories,future
+LiDAR spatial consistency across the three units,decoded point clouds + stable extrinsics + static-scene overlap analysis,future

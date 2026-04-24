@@ -1,0 +1,5 @@
+analysis,status,required_inputs,possible_outputs
+NTP/PTP synchronization quality,future,chrony / ptp4l / phc2sys offset logs,"T2 offset summary, offset-vs-time, offset distribution"
+Ego-motion validation against fused odometry,future,"/odometry/filtered or fused odometry CSV, plus RTK reference","F9 trajectory comparison, F10 speed consistency with fused, T5 ego-motion accuracy"
+Interaction metrics and gaze-object association,future,LiDAR detections / tracking results,"minimum lateral distance, TTC/PET, gaze-on-threat, maneuver anticipation"
+Multi-LiDAR spatial consistency,future,decoded point clouds and finalized extrinsics,"point-cloud overlay error, ICP residual, ground-plane consistency"

@@ -1,0 +1,2 @@
+n_windows,median_lag_s,p95_abs_lag_s,median_corr_score,steering_signal,imu_signal
+243,-2.0,2.0,0.0,angle_deg_clamped,headingspeed

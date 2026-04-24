@@ -1,0 +1,2 @@
+signal_a,signal_b,n_windows,median_lag_s,p95_abs_lag_s,median_corr,p95_corr
+steering_rate_deg_per_s,headingspeed,243,0.16,1.0,0.23509614355007885,0.5300846417063368
