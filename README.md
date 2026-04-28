@@ -766,7 +766,7 @@ LiDAR data processing in this project relies on a **vendor SDK** that requires a
 
 Before running the downstream LiDAR processing pipeline, LiDAR-to-LiDAR extrinsic calibration is performed to prepare calibration results that can later be written into YAML or related configuration files.
 
-### Step 1: Run LiDAR-to-LiDAR calibration
+### Run LiDAR-to-LiDAR calibration
 
 ```bash
 python3 /lidar2lidar_calibration/script/lidar2lidar_calibration.py   --source_csv /lidar2lidar_calibration/source/indoor/b8.csv   --target_csv /lidar2lidar_calibration/source/indoor/f8.csv   --skip_header   --voxel_size 0.05   --cols 0 1 2
@@ -810,14 +810,14 @@ However, to support reproducibility, this project will still publish selected no
 - calibration configuration files  
 - `lidar_config`  
 - selected YAML configuration files used in the processing pipeline
-### export and save perception result
+## 3.3 export and save perception result
 
 For exporting the RViz perception topic from a ROS1 bag file to Excel in timestamp order, use:
 
 ```bash
 python3 export_markerarray_to_excel.py your_file.bag --topic /perception_info_rviz --output perception_info_rviz.xlsx   --max-rows 1000000
 ```
-## 3.3 Notes for users
+## 3.4 Notes for users
 
 To reproduce the LiDAR processing workflow, users will need:
 
