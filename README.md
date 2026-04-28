@@ -391,7 +391,7 @@ python3 /headpose_estimation/scripts/analyze_headpose_csv.py \
   --only-ok \
   --only-head-quality-ok \
   --min-head-tags 2 \
-  --max-rmse 5 \
+  --max-rmse 2 \
   --out-dir /headpose_estimation/result/headpose_analysis
 ```
 
