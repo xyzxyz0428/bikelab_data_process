@@ -555,19 +555,26 @@ python3 /headpose_estimation/scripts/validate_tobii_2d_with_tag_windows_v2.py \
 ### Step 1: Generate `T_H_C1.json`
 
 ```bash id="ffweme"
-python3 /headpose_estimation/scripts/calibrate_T_H_C1_via_common_board.py \
-  --back-camera-json /headpose_estimation/scripts/camera.json \
-  --back-frame-dir /headpose_estimation/source/back_frames \
-  --back-timestamps-csv /headpose_estimation/source/back_timestamps.csv \
-  --scene-camera-json /headpose_estimation/scripts/scene_camera.json \
-  --scene-frame-dir /headpose_estimation/source/scene_frames \
-  --scene-timestamps-csv /headpose_estimation/result/scene_timestamps.csv \
-  --head-rig-config /headpose_estimation/scripts/head_rig_config.json \
-  --rig-calib-json /headpose_estimation/scripts/rig_calib.json \
-  --board-tag-id 17 \
-  --board-tag-size-m 0.10 \
+python3 headpose_estimation/scripts/calibrate_T_H_C1_via_common_board.py \
+  --back-camera-json headpose_estimation/scripts/camera.json \
+  --back-frame-dir new_experiment/01_T_H_C1_calibration/back_frames \
+  --back-timestamps-csv new_experiment/01_T_H_C1_calibration/back_timestamps.csv \
+  --scene-camera-json headpose_estimation/scripts/scene_camera.json \
+  --scene-frame-dir new_experiment/01_T_H_C1_calibration/scene_frames \
+  --scene-timestamps-csv new_experiment/01_T_H_C1_calibration/scene_timestamps.csv \
+  --rig-calib-json headpose_estimation/scripts/rig_calib.json \
+  --board-tag-ids 0,1,2,3,4,5,6,7,8,9,10,11 \
+  --board-rows 4 \
+  --board-cols 3 \
+  --board-tag-size-m 0.040 \
+  --board-gap-x-m 0.020 \
+  --board-gap-y-m 0.020 \
   --tag-family tag36h11 \
-  --output-json /headpose_estimation/result/T_H_C1.json
+  --min-board-tags-scene 2 \
+  --min-board-tags-back 2 \
+  --min-head-tags 2 \
+  --max-pair-dt-ms 30 \
+  --output-json new_experiment/result/T_H_C1.json
 ```
 
 **Output**
