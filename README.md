@@ -427,7 +427,7 @@ python3 headpose_estimation/scripts/build_apriltag_baseline_from_back_camera.py 
   --tag-family tag36h11 \
   --default-size-m 0.10 \
   --ref-tag-id 17 \
-  --target-tag-ids 22,23,24,25,26,15,16,17,19,20,9,10,11,12,13,14 \
+  --target-tag-ids 21,22,23,24,25,26,15,16,17,19,20,9,10,11,12,13,14 \
   --min-samples 10 \
   --max-translation-std-m 0.01 \
   --max-rotation-std-deg 2.0 \
@@ -563,7 +563,7 @@ python3 headpose_estimation/scripts/calibrate_T_H_C1_via_common_board.py \
   --scene-frame-dir new_experiment/01_T_H_C1_calibration/scene_frames \
   --scene-timestamps-csv new_experiment/01_T_H_C1_calibration/scene_timestamps.csv \
   --rig-calib-json headpose_estimation/scripts/rig_calib.json \
-  --board-tag-ids 0,1,2,3,4,5,6,7,8,9,10,11 \
+  --board-tag-ids 30,31,32,33,34,35,36,37,38,39,40,41 \
   --board-rows 4 \
   --board-cols 3 \
   --board-tag-size-m 0.040 \
