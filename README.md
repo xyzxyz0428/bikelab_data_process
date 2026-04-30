@@ -255,11 +255,11 @@ ros2 run camera_streamer camera_publisher
 On the local workstation:
 
 ```bash id="c19m4v"
-python3 /headpose_estimation/camera_calibration/save_calib_images.py \
+python3 headpose_estimation/camera_calibration/save_calib_images.py \
   --ros-args \
   -p sec_per_frame:=1.0 \
   -p max_images:=60 \
-  -p output_dir:=/headpose_estimation/camera_calibration/calib_images
+  -p output_dir:=headpose_estimation/camera_calibration/calib_images
 ```
 
 **Output**
@@ -277,13 +277,13 @@ python3 /headpose_estimation/camera_calibration/save_calib_images.py \
 ### Step 1: Generate `camera.json`
 
 ```bash id="ldl1dw"
-python3 /headpose_estimation/camera_calibration/calibrate_camera_offline.py \
-  --image-dir /headpose_estimation/camera_calibration/calib_images \
+python3 headpose_estimation/camera_calibration/calibrate_camera_offline.py \
+  --image-dir headpose_estimation/camera_calibration/calib_images \
   --cols 5 \
   --rows 7 \
   --square-size-m 0.031 \
-  --output-json /headpose_estimation/camera_calibration/camera.json \
-  --preview-dir /headpose_estimation/camera_calibration/calib_preview \
+  --output-json headpose_estimation/camera_calibration/camera.json \
+  --preview-dir headpose_estimation/camera_calibration/calib_preview \
   --model pinhole
 ```
 
@@ -319,11 +319,11 @@ Saved to: camera.json
 ### Step 1: Generate `rig_calib.json`
 
 ```bash id="1ji56l"
-python3 /headpose_estimation/scripts/calibrate_helmet_rig.py \
-  --camera /headpose_estimation/scripts/camera.json \
-  --config /headpose_estimation/scripts/head_rig_config.json \
-  --image-dir /headpose_estimation/source/calibration_images \
-  --output /headpose_estimation/scripts/rig_calib.json
+python3 headpose_estimation/scripts/calibrate_helmet_rig.py \
+  --camera headpose_estimation/scripts/camera.json \
+  --config headpose_estimation/scripts/head_rig_config.json \
+  --image-dir headpose_estimation/source/calibration_images \
+  --output headpose_estimation/scripts/rig_calib.json
 ```
 
 Example output:
@@ -352,14 +352,14 @@ saved rig calibration to rig_calib.json
 ### Step 1: Generate `headpose_output.csv`
 
 ```bash id="mtdhfh"
-python3 /headpose_estimation/scripts/estimate_headpose_from_frames.py \
-  --camera /headpose_estimation/scripts/camera.json \
-  --config /headpose_estimation/scripts/head_rig_config.json \
-  --rig-calib /headpose_estimation/scripts/rig_calib.json \
-  --frame-dir /headpose_estimation/source/frames_static \
-  --timestamps-csv /headpose_estimation/source/frames_static/timestamps.csv \
-  --output-csv /headpose_estimation/result/headpose_output.csv \
-  --neutral-frame /headpose_estimation/source/neutral.png \
+python3 headpose_estimation/scripts/estimate_headpose_from_frames.py \
+  --camera headpose_estimation/scripts/camera.json \
+  --config headpose_estimation/scripts/head_rig_config.json \
+  --rig-calib headpose_estimation/scripts/rig_calib.json \
+  --frame-dir headpose_estimation/source/frames_static \
+  --timestamps-csv headpose_estimation/source/frames_static/timestamps.csv \
+  --output-csv headpose_estimation/result/headpose_output.csv \
+  --neutral-frame headpose_estimation/source/neutral.png \
   --min-head-tags 2 \
   --max-head-rmse-px 5
 ```
@@ -386,13 +386,13 @@ python3 /headpose_estimation/scripts/estimate_headpose_from_frames.py \
 
 ```bash id="u5hcyw"
 source ~/venvs/headpose/bin/activate
-python3 /headpose_estimation/scripts/analyze_headpose_csv.py \
-  --csv /headpose_estimation/result/headpose_output.csv \
+python3 headpose_estimation/scripts/analyze_headpose_csv.py \
+  --csv headpose_estimation/result/headpose_output.csv \
   --only-ok \
   --only-head-quality-ok \
   --min-head-tags 2 \
   --max-rmse 2 \
-  --out-dir /headpose_estimation/result/headpose_analysis
+  --out-dir headpose_estimation/result/headpose_analysis
 ```
 
 **Output**
@@ -420,10 +420,10 @@ python3 /headpose_estimation/scripts/analyze_headpose_csv.py \
 ### Step 1: Generate `apriltag_baseline.json`
 
 ```bash id="3m2ww7"
-python3 /headpose_estimation/scripts/build_apriltag_baseline_from_back_camera.py \
-  --camera-json /headpose_estimation/scripts/camera.json \
-  --frame-dir /headpose_estimation/source/baseline_frames \
-  --timestamps-csv /headpose_estimation/source/baseline_timestamps.csv \
+python3 headpose_estimation/scripts/build_apriltag_baseline_from_back_camera.py \
+  --camera-json headpose_estimation/scripts/camera.json \
+  --frame-dir headpose_estimation/source/baseline_frames \
+  --timestamps-csv headpose_estimation/source/baseline_timestamps.csv \
   --tag-family tag36h11 \
   --default-size-m 0.10 \
   --ref-tag-id 17 \
@@ -431,7 +431,7 @@ python3 /headpose_estimation/scripts/build_apriltag_baseline_from_back_camera.py
   --min-samples 10 \
   --max-translation-std-m 0.01 \
   --max-rotation-std-deg 2.0 \
-  --output-json /headpose_estimation/result/apriltag_baseline.json
+  --output-json headpose_estimation/result/apriltag_baseline.json
 ```
 
 **Output**
@@ -455,11 +455,11 @@ python3 /headpose_estimation/scripts/build_apriltag_baseline_from_back_camera.py
 ### Step 1: Generate `scene_timestamps.csv`
 
 ```bash id="0n5t6t"
-python3 /headpose_estimation/scripts/generate_scene_frame_timestamps.py \
-  --recording-g3 /headpose_estimation/source/tobii_recording/recording.g3 \
-  --scene-video /headpose_estimation/source/tobii_recording/scenevideo.mp4 \
-  --out-csv /headpose_estimation/result/scene_timestamps.csv \
-  --out-dir /headpose_estimation/source/scene_frames
+python3 headpose_estimation/scripts/generate_scene_frame_timestamps.py \
+  --recording-g3 headpose_estimation/source/tobii_recording/recording.g3 \
+  --scene-video headpose_estimation/source/tobii_recording/scenevideo.mp4 \
+  --out-csv headpose_estimation/result/scene_timestamps.csv \
+  --out-dir headpose_estimation/source/scene_frames
 ```
 
 **Output**
@@ -479,9 +479,9 @@ python3 /headpose_estimation/scripts/generate_scene_frame_timestamps.py \
 ### Step 1: Generate `tag_time_windows.csv`
 
 ```bash id="rflfjh"
-python3 /headpose_estimation/scripts/extract_tag_time_windows.py \
-  --scene-timestamps-csv /headpose_estimation/result/scene_timestamps.csv \
-  --output-csv /headpose_estimation/result/tag_time_windows.csv
+python3 headpose_estimation/scripts/extract_tag_time_windows.py \
+  --scene-timestamps-csv headpose_estimation/result/scene_timestamps.csv \
+  --output-csv headpose_estimation/result/tag_time_windows.csv
 ```
 
 **Output**
@@ -499,39 +499,39 @@ python3 /headpose_estimation/scripts/extract_tag_time_windows.py \
 ### Step 1: Validate raw gaze
 
 ```bash id="asjlwm"
-python3 /headpose_estimation/scripts/validate_tobii_2d_with_tag_windows_v2.py \
-  --tag-windows-csv /headpose_estimation/result/tag_time_windows.csv \
-  --scene-timestamps-csv /headpose_estimation/result/scene_timestamps.csv \
-  --scene-frame-dir /headpose_estimation/source/scene_frames \
-  --tobii-xlsx /headpose_estimation/source/tobii_raw.xlsx \
-  --recording-g3 /headpose_estimation/source/tobii_recording/recording.g3 \
+python3 headpose_estimation/scripts/validate_tobii_2d_with_tag_windows_v2.py \
+  --tag-windows-csv headpose_estimation/result/tag_time_windows.csv \
+  --scene-timestamps-csv headpose_estimation/result/scene_timestamps.csv \
+  --scene-frame-dir headpose_estimation/source/scene_frames \
+  --tobii-xlsx headpose_estimation/source/tobii_raw.xlsx \
+  --recording-g3 headpose_estimation/source/tobii_recording/recording.g3 \
   --mode raw \
   --window-fraction-start 0.3 \
   --window-fraction-end 0.7 \
-  --apriltag-baseline-json /headpose_estimation/result/apriltag_baseline.json \
+  --apriltag-baseline-json headpose_estimation/result/apriltag_baseline.json \
   --exclude-low-confidence-tags \
   --max-tag-translation-std-m 0.01 \
   --max-tag-rotation-std-deg 2.0 \
-  --output-csv /headpose_estimation/result/tobii_2d_validation_raw.csv
+  --output-csv headpose_estimation/result/tobii_2d_validation_raw.csv
 ```
 
 ### Step 2: Validate fixation gaze
 
 ```bash id="w4f4qc"
-python3 /headpose_estimation/scripts/validate_tobii_2d_with_tag_windows_v2.py \
-  --tag-windows-csv /headpose_estimation/result/tag_time_windows.csv \
-  --scene-timestamps-csv /headpose_estimation/result/scene_timestamps.csv \
-  --scene-frame-dir /headpose_estimation/source/scene_frames \
-  --tobii-xlsx /headpose_estimation/source/tobii_fixation.xlsx \
-  --recording-g3 /headpose_estimation/source/tobii_recording/recording.g3 \
+python3 headpose_estimation/scripts/validate_tobii_2d_with_tag_windows_v2.py \
+  --tag-windows-csv headpose_estimation/result/tag_time_windows.csv \
+  --scene-timestamps-csv headpose_estimation/result/scene_timestamps.csv \
+  --scene-frame-dir headpose_estimation/source/scene_frames \
+  --tobii-xlsx headpose_estimation/source/tobii_fixation.xlsx \
+  --recording-g3 headpose_estimation/source/tobii_recording/recording.g3 \
   --mode fixation \
   --window-fraction-start 0.3 \
   --window-fraction-end 0.7 \
-  --apriltag-baseline-json /headpose_estimation/result/apriltag_baseline.json \
+  --apriltag-baseline-json headpose_estimation/result/apriltag_baseline.json \
   --exclude-low-confidence-tags \
   --max-tag-translation-std-m 0.01 \
   --max-tag-rotation-std-deg 2.0 \
-  --output-csv /headpose_estimation/result/tobii_2d_validation_fixation.csv
+  --output-csv headpose_estimation/result/tobii_2d_validation_fixation.csv
 ```
 
 **Output**
@@ -596,16 +596,16 @@ python3 headpose_estimation/scripts/calibrate_T_H_C1_via_common_board.py \
 ### Step 1: Generate `T_W_C2.json`
 
 ```bash id="mp2qbx"
-python3 /headpose_estimation/scripts/estimate_T_W_C2_from_ref17.py \
-  --camera-json /headpose_estimation/scripts/camera.json \
-  --frame-dir /headpose_estimation/source/baseline_frames \
-  --timestamps-csv /headpose_estimation/source/baseline_timestamps.csv \
+python3 headpose_estimation/scripts/estimate_T_W_C2_from_ref17.py \
+  --camera-json headpose_estimation/scripts/camera.json \
+  --frame-dir headpose_estimation/source/baseline_frames \
+  --timestamps-csv headpose_estimation/source/baseline_timestamps.csv \
   --ref-tag-id 17 \
   --tag-size-m 0.10 \
   --min-samples 20 \
   --max-translation-std-m 0.01 \
   --max-rotation-std-deg 2.0 \
-  --output-json /headpose_estimation/result/T_W_C2.json
+  --output-json headpose_estimation/result/T_W_C2.json
 ```
 
 **Output**
@@ -628,21 +628,21 @@ python3 /headpose_estimation/scripts/estimate_T_W_C2_from_ref17.py \
 ### Step 1: Generate `T_C1_HUCS.json`
 
 ```bash id="1l841y"
-python3 /headpose_estimation/scripts/estimate_T_C1_HUCS_from_tobii_2d3d.py \
-  --tobii-xlsx /headpose_estimation/source/tobii_raw.xlsx \
-  --recording-g3 /headpose_estimation/source/tobii_recording/recording.g3 \
-  --scene-camera-json /headpose_estimation/scripts/scene_camera.json \
-  --output-json /headpose_estimation/result/T_C1_HUCS.json
+python3 headpose_estimation/scripts/estimate_T_C1_HUCS_from_tobii_2d3d.py \
+  --tobii-xlsx headpose_estimation/source/tobii_raw.xlsx \
+  --recording-g3 headpose_estimation/source/tobii_recording/recording.g3 \
+  --scene-camera-json headpose_estimation/scripts/scene_camera.json \
+  --output-json headpose_estimation/result/T_C1_HUCS.json
 ```
 
 ### Step 2: Generate `transforms.json`
 
 ```bash id="x5zsn5"
-python3 /headpose_estimation/scripts/make_transforms_json.py \
-  --T-W-C2-json /headpose_estimation/result/T_W_C2.json \
-  --T-H-C1-json /headpose_estimation/result/T_H_C1.json \
-  --T-C1-HUCS-json /headpose_estimation/result/T_C1_HUCS.json \
-  --output-json /headpose_estimation/result/transforms.json
+python3 headpose_estimation/scripts/make_transforms_json.py \
+  --T-W-C2-json headpose_estimation/result/T_W_C2.json \
+  --T-H-C1-json headpose_estimation/result/T_H_C1.json \
+  --T-C1-HUCS-json headpose_estimation/result/T_C1_HUCS.json \
+  --output-json headpose_estimation/result/transforms.json
 ```
 
 **Output**
@@ -662,14 +662,14 @@ python3 /headpose_estimation/scripts/make_transforms_json.py \
 ### Step 1: Generate `gaze_abc_eval.csv`
 
 ```bash id="o69iej"
-python3 /headpose_estimation/scripts/evaluate_gaze_abc_by_windows.py \
-  --tag-windows-csv /headpose_estimation/result/tag_time_windows.csv \
-  --apriltag-baseline-json /headpose_estimation/result/apriltag_baseline.json \
-  --headpose-csv /headpose_estimation/result/headpose_output.csv \
-  --scene-camera-json /headpose_estimation/scripts/scene_camera.json \
-  --transforms-json /headpose_estimation/result/transforms.json \
-  --tobii-raw-xlsx /headpose_estimation/source/tobii_raw.xlsx \
-  --recording-g3 /headpose_estimation/source/tobii_recording/recording.g3 \
+python3 headpose_estimation/scripts/evaluate_gaze_abc_by_windows.py \
+  --tag-windows-csv headpose_estimation/result/tag_time_windows.csv \
+  --apriltag-baseline-json headpose_estimation/result/apriltag_baseline.json \
+  --headpose-csv headpose_estimation/result/headpose_output.csv \
+  --scene-camera-json headpose_estimation/scripts/scene_camera.json \
+  --transforms-json headpose_estimation/result/transforms.json \
+  --tobii-raw-xlsx headpose_estimation/source/tobii_raw.xlsx \
+  --recording-g3 headpose_estimation/source/tobii_recording/recording.g3 \
   --window-fraction-start 0.3 \
   --window-fraction-end 0.7 \
   --max-sync-dt-ms 20 \
@@ -678,20 +678,20 @@ python3 /headpose_estimation/scripts/evaluate_gaze_abc_by_windows.py \
   --max-tag-rotation-std-deg 2.0 \
   --min-head-tags 2 \
   --max-head-rmse-px 5 \
-  --output-csv /headpose_estimation/result/gaze_abc_eval.csv
+  --output-csv headpose_estimation/result/gaze_abc_eval.csv
 ```
 
 Optional strict B mode:
 
 ```bash id="v0ayk7"
-python3 /headpose_estimation/scripts/evaluate_gaze_abc_by_windows.py \
-  --tag-windows-csv /headpose_estimation/result/tag_time_windows.csv \
-  --apriltag-baseline-json /headpose_estimation/result/apriltag_baseline.json \
-  --headpose-csv /headpose_estimation/result/headpose_output.csv \
-  --scene-camera-json /headpose_estimation/scripts/scene_camera.json \
-  --transforms-json /headpose_estimation/result/transforms.json \
-  --tobii-raw-xlsx /headpose_estimation/source/tobii_raw.xlsx \
-  --recording-g3 /headpose_estimation/source/tobii_recording/recording.g3 \
+python3 headpose_estimation/scripts/evaluate_gaze_abc_by_windows.py \
+  --tag-windows-csv headpose_estimation/result/tag_time_windows.csv \
+  --apriltag-baseline-json headpose_estimation/result/apriltag_baseline.json \
+  --headpose-csv headpose_estimation/result/headpose_output.csv \
+  --scene-camera-json headpose_estimation/scripts/scene_camera.json \
+  --transforms-json headpose_estimation/result/transforms.json \
+  --tobii-raw-xlsx headpose_estimation/source/tobii_raw.xlsx \
+  --recording-g3 headpose_estimation/source/tobii_recording/recording.g3 \
   --window-fraction-start 0.3 \
   --window-fraction-end 0.7 \
   --max-sync-dt-ms 20 \
@@ -701,7 +701,7 @@ python3 /headpose_estimation/scripts/evaluate_gaze_abc_by_windows.py \
   --min-head-tags 2 \
   --max-head-rmse-px 5 \
   --b-require-both-eyes-valid \
-  --output-csv /headpose_estimation/result/gaze_abc_eval_strictB.csv
+  --output-csv headpose_estimation/result/gaze_abc_eval_strictB.csv
 ```
 
 **Methods**
