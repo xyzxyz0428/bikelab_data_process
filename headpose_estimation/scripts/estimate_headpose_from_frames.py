@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import argparse
 import csv
 import json
@@ -8,9 +9,20 @@ import numpy as np
 
 from pose_utils import (
     load_camera_json, make_detector, detect_tags, reorder_pupil_corners,
-    square_object_points, solve_single_tag_pose_ippe, invert_T, rt_to_T,
-    T_to_rt, rot_to_rpy_deg, pose_rmse
+    square_object_points, solve_single_tag_pose_ippe, invert_T,
+    rt_to_T, T_to_rt, rot_to_rpy_deg, pose_rmse
 )
+
+
+def compute_reprojection_rmse(obj_pts, img_pts, T_C_H, K, dist):
+    Rm = T_C_H[:3, :3]
+    t = T_C_H[:3, 3].reshape(3, 1)
+    rvec, _ = cv2.Rodrigues(Rm)
+    proj, _ = cv2.projectPoints(obj_pts, rvec, t, K, dist)
+    proj = proj.reshape(-1, 2)
+    err = np.linalg.norm(proj - img_pts, axis=1)
+    rmse = float(np.sqrt(np.mean(err ** 2))) if len(err) > 0 else np.nan
+    return rmse
 
 
 def transform_points(T_ab, pts_b):
@@ -101,7 +113,7 @@ def solve_head_bundle_pnp(obj_pts, img_pts, K, dist, T_init=None):
 
     Rm, _ = cv2.Rodrigues(rvec)
     T_cam_head = rt_to_T(Rm, tvec.reshape(3))
-    rmse = pose_rmse(obj_pts, img_pts, K, dist, T_cam_head)
+    rmse = compute_reprojection_rmse(obj_pts, img_pts, T_cam_head, K, dist)
     return T_cam_head, rmse, inliers
 
 
@@ -112,12 +124,6 @@ def load_timestamps_csv(path):
         for r in reader:
             rows.append(r)
     return rows
-
-def rt_to_T(Rm, t):
-    T = np.eye(4, dtype=np.float64)
-    T[:3, :3] = Rm
-    T[:3, 3] = np.asarray(t).reshape(3)
-    return T
 
 
 def back_tag_to_body_transform(back_tag_mount: str):
@@ -142,6 +148,18 @@ def back_tag_to_body_transform(back_tag_mount: str):
     raise ValueError(f"Unsupported back_tag_mount: {back_tag_mount}")
 
 
+def resolve_frame_path(frame_dir: Path, frame_idx: int):
+    candidates = [
+        frame_dir / f"frame_{frame_idx:06d}.png",
+        frame_dir / f"frame_{frame_idx:06d}.jpg",
+        frame_dir / f"frame_{frame_idx:06d}.jpeg",
+    ]
+    for p in candidates:
+        if p.exists():
+            return p
+    return None
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--camera", required=True)
@@ -152,6 +170,12 @@ def main():
     ap.add_argument("--output-csv", required=True)
     ap.add_argument("--neutral-frame", default=None,
                     help="optional frame filename, e.g. frame_006874.png")
+
+    ap.add_argument("--min-head-tags", type=int, default=2,
+                    help="minimum number of distinct head tags required")
+    ap.add_argument("--max-head-rmse-px", type=float, default=5.0,
+                    help="maximum allowed head bundle reprojection RMSE")
+
     args = ap.parse_args()
 
     K, dist = load_camera_json(args.camera)
@@ -171,7 +195,6 @@ def main():
     detector = make_detector(tag_family=tag_family, quad_decimate=1.0)
 
     rows = load_timestamps_csv(args.timestamps_csv)
-
     frame_dir = Path(args.frame_dir)
 
     last_T_cam_head = None
@@ -184,8 +207,23 @@ def main():
         frame_idx = int(r["frame_idx"])
         timestamp_ns = r["unix_ns"]
 
-        frame_name = f"frame_{frame_idx:06d}.png"
-        img_path = frame_dir / frame_name
+        img_path = resolve_frame_path(frame_dir, frame_idx)
+        frame_name = img_path.name if img_path is not None else f"frame_{frame_idx:06d}.png"
+
+        if img_path is None:
+            outputs.append({
+                "frame_idx": frame_idx,
+                "frame": frame_name,
+                "timestamp_ns": timestamp_ns,
+                "ok": 0,
+                "status": "image_not_found",
+                "num_head_tags": 0,
+                "visible_head_tag_ids": "",
+                "head_rmse_px": "",
+                "head_quality_ok": 0,
+            })
+            continue
+
         img = cv2.imread(str(img_path), cv2.IMREAD_COLOR)
         if img is None:
             outputs.append({
@@ -193,7 +231,11 @@ def main():
                 "frame": frame_name,
                 "timestamp_ns": timestamp_ns,
                 "ok": 0,
-                "status": "image_not_found"
+                "status": "image_read_failed",
+                "num_head_tags": 0,
+                "visible_head_tag_ids": "",
+                "head_rmse_px": "",
+                "head_quality_ok": 0,
             })
             continue
 
@@ -207,13 +249,23 @@ def main():
         )
 
         T_cam_head = None
-        head_rmse = None
-        if obj_pts is not None and len(used_head_tag_ids) >= 1:
+        head_rmse = np.nan
+        unique_head_ids = sorted(list(set(used_head_tag_ids))) if used_head_tag_ids else []
+        num_head_tags = len(unique_head_ids)
+
+        if obj_pts is not None and num_head_tags >= 1:
             T_cam_head, head_rmse, _ = solve_head_bundle_pnp(
                 obj_pts, img_pts, K, dist, T_init=last_T_cam_head
             )
             if T_cam_head is not None:
                 last_T_cam_head = T_cam_head
+
+        head_quality_ok = (
+            T_cam_head is not None and
+            num_head_tags >= args.min_head_tags and
+            np.isfinite(head_rmse) and
+            head_rmse <= args.max_head_rmse_px
+        )
 
         # back tag
         back_dets = [d for d in dets if int(d.tag_id) == back_tag_id]
@@ -223,12 +275,11 @@ def main():
                 back_dets[0], back_tag_size_m, K, dist
             )
             if T_cam_back_tag is not None:
-                # convert from back-tag frame to canonical body frame
                 T_cam_back = T_cam_back_tag @ T_backtag_body
                 last_T_cam_back = T_cam_back
 
                 if args.neutral_frame is not None and frame_name == args.neutral_frame:
-                    if T_cam_head is not None and T_cam_back is not None:
+                    if head_quality_ok and T_cam_back is not None:
                         neutral_T_B_H = invert_T(T_cam_back) @ T_cam_head
                         print(f"[INFO] neutral frame set from {frame_name}")
 
@@ -237,15 +288,11 @@ def main():
             "frame": frame_name,
             "timestamp_ns": timestamp_ns,
             "ok": 0,
-            "num_head_tags": len(set(used_head_tag_ids)) if used_head_tag_ids else 0,
-            "head_rmse_px": head_rmse if head_rmse is not None else ""
+            "num_head_tags": num_head_tags,
+            "visible_head_tag_ids": " ".join(map(str, unique_head_ids)) if unique_head_ids else "",
+            "head_rmse_px": float(head_rmse) if np.isfinite(head_rmse) else "",
+            "head_quality_ok": int(head_quality_ok),
         }
-
-        if used_head_tag_ids:
-            unique_ids = sorted(list(set(used_head_tag_ids)))
-            out["visible_head_tag_ids"] = " ".join(map(str, unique_ids))
-        else:
-            out["visible_head_tag_ids"] = ""
 
         if T_cam_head is not None:
             Rh, th = T_to_rt(T_cam_head)
@@ -267,7 +314,7 @@ def main():
                 "cam_back_yaw_deg": yaw_b,
             })
 
-        if T_cam_head is not None and T_cam_back is not None:
+        if head_quality_ok and T_cam_back is not None:
             T_B_H = invert_T(T_cam_back) @ T_cam_head
             Rbh, tbh = T_to_rt(T_B_H)
             roll_bh, pitch_bh, yaw_bh = rot_to_rpy_deg(Rbh)
@@ -296,6 +343,8 @@ def main():
                 out["status"] = "head_and_back_missing"
             elif T_cam_head is None:
                 out["status"] = "head_missing"
+            elif not head_quality_ok and T_cam_back is not None:
+                out["status"] = "head_low_quality"
             else:
                 out["status"] = "back_missing"
 

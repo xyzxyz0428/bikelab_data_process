@@ -97,6 +97,31 @@ def resolve_frame_path(frame_dir, frame_idx):
     return None
 
 
+def load_baseline_json(path, exclude_low_confidence=True,
+                       max_tag_translation_std_m=None,
+                       max_tag_rotation_std_deg=None):
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    tags = {}
+    for sid, item in data["tags"].items():
+        tid = int(sid)
+
+        if exclude_low_confidence and item.get("low_confidence", False):
+            continue
+
+        if max_tag_translation_std_m is not None:
+            if item.get("translation_std_m", 0.0) > max_tag_translation_std_m:
+                continue
+
+        if max_tag_rotation_std_deg is not None:
+            if item.get("rotation_std_deg", 0.0) > max_tag_rotation_std_deg:
+                continue
+
+        tags[tid] = item
+    return tags
+
+
 def preprocess_tobii_rows_xlsx(tobii_xlsx_path, recording_g3_path, mode):
     recording_start_ns = get_recording_start_ns(recording_g3_path)
 
@@ -161,10 +186,17 @@ def main():
     ap.add_argument("--recording-g3", required=True)
     ap.add_argument("--mode", required=True, choices=["raw", "fixation"])
     ap.add_argument("--output-csv", required=True)
+
     ap.add_argument("--tag-family", default="tag36h11")
     ap.add_argument("--max-tobii-dt-ms", type=float, default=100.0)
     ap.add_argument("--window-fraction-start", type=float, default=0.0)
     ap.add_argument("--window-fraction-end", type=float, default=1.0)
+
+    ap.add_argument("--apriltag-baseline-json", default=None)
+    ap.add_argument("--exclude-low-confidence-tags", action="store_true")
+    ap.add_argument("--max-tag-translation-std-m", type=float, default=None)
+    ap.add_argument("--max-tag-rotation-std-deg", type=float, default=None)
+
     args = ap.parse_args()
 
     windows = read_csv_dicts(args.tag_windows_csv)
@@ -172,6 +204,16 @@ def main():
     tobii_rows, recording_start_ns = preprocess_tobii_rows_xlsx(
         args.tobii_xlsx, args.recording_g3, args.mode
     )
+
+    allowed_tags = None
+    if args.apriltag_baseline_json is not None:
+        baseline_tags = load_baseline_json(
+            args.apriltag_baseline_json,
+            exclude_low_confidence=args.exclude_low_confidence_tags,
+            max_tag_translation_std_m=args.max_tag_translation_std_m,
+            max_tag_rotation_std_deg=args.max_tag_rotation_std_deg,
+        )
+        allowed_tags = set(baseline_tags.keys())
 
     print(f"[INFO] recording_start_ns = {recording_start_ns}")
     print(f"[INFO] processed Tobii rows ({args.mode}) = {len(tobii_rows)}")
@@ -202,6 +244,9 @@ def main():
         end_f = to_int(w.get("end_frame_idx"))
 
         if None in [window_id, tag_id, start_f, end_f]:
+            continue
+
+        if allowed_tags is not None and tag_id not in allowed_tags:
             continue
 
         n_frames = end_f - start_f + 1
@@ -395,7 +440,6 @@ def main():
 
         print(f"[INFO] saved summary to {summary_csv}")
 
-    # global summary
     if len(ok_rows) > 0:
         inside_vals = np.array([int(r["inside_tag_polygon"]) for r in ok_rows], dtype=np.int32)
         center_err = np.array([float(r["center_error_px"]) for r in ok_rows], dtype=np.float64)
