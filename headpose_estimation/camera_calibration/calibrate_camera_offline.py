@@ -33,7 +33,6 @@ def find_corners(gray, pattern_size, criteria):
     found, corners = cv2.findChessboardCorners(gray, pattern_size, flags=flags)
 
     if not found:
-        # retry without FAST_CHECK, slower but sometimes more reliable
         flags2 = cv2.CALIB_CB_ADAPTIVE_THRESH + cv2.CALIB_CB_NORMALIZE_IMAGE
         found, corners = cv2.findChessboardCorners(gray, pattern_size, flags=flags2)
 
@@ -49,6 +48,119 @@ def find_corners(gray, pattern_size, criteria):
     )
 
     return True, corners_subpix
+
+
+def compute_image_quality(gray, corners, image_size):
+    """
+    Compute simple image/chessboard quality indicators.
+
+    image_size: (width, height)
+    corners: detected chessboard corners, shape Nx1x2
+    """
+    w, h = image_size
+
+    sharpness = float(cv2.Laplacian(gray, cv2.CV_64F).var())
+    mean_brightness = float(np.mean(gray))
+
+    pts = corners.reshape(-1, 2)
+    x_min, y_min = np.min(pts, axis=0)
+    x_max, y_max = np.max(pts, axis=0)
+
+    board_w = float(x_max - x_min)
+    board_h = float(y_max - y_min)
+
+    board_area_ratio = float((board_w * board_h) / (w * h))
+
+    board_cx = float((x_min + x_max) / 2.0)
+    board_cy = float((y_min + y_max) / 2.0)
+
+    board_center_x_norm = float(board_cx / w)
+    board_center_y_norm = float(board_cy / h)
+
+    board_center_distance = float(
+        np.sqrt((board_center_x_norm - 0.5) ** 2 + (board_center_y_norm - 0.5) ** 2)
+    )
+
+    return {
+        "sharpness": sharpness,
+        "mean_brightness": mean_brightness,
+        "board_area_ratio": board_area_ratio,
+        "board_center_x_norm": board_center_x_norm,
+        "board_center_y_norm": board_center_y_norm,
+        "board_center_distance": board_center_distance,
+    }
+
+
+def pass_quality_filter(q, args):
+    if q["sharpness"] < args.min_sharpness:
+        return False, "low_sharpness"
+
+    if q["mean_brightness"] < args.min_mean_brightness:
+        return False, "too_dark"
+
+    if q["mean_brightness"] > args.max_mean_brightness:
+        return False, "too_bright"
+
+    if q["board_area_ratio"] < args.min_board_area_ratio:
+        return False, "board_too_small"
+
+    if q["board_area_ratio"] > args.max_board_area_ratio:
+        return False, "board_too_large"
+
+    return True, "ok"
+
+
+def select_diverse_images(candidates, max_selected):
+    """
+    Select high-quality but spatially diverse calibration images.
+
+    candidates: dicts containing:
+      image, image_path, objp, corners, quality
+    """
+    if max_selected <= 0 or len(candidates) <= max_selected:
+        return candidates
+
+    def score(c):
+        q = c["quality"]
+
+        sharp_score = min(q["sharpness"] / 300.0, 3.0)
+
+        # Prefer board size around 20-35% of image area, but not only very large boards.
+        area_score = 1.0 - abs(q["board_area_ratio"] - 0.25)
+
+        # Prefer board also near image edges/corners for better distortion calibration.
+        edge_score = q["board_center_distance"]
+
+        return sharp_score + area_score + 0.8 * edge_score
+
+    candidates_sorted = sorted(candidates, key=score, reverse=True)
+
+    # Spatial bins based on chessboard center position
+    bins = {}
+    for c in candidates_sorted:
+        q = c["quality"]
+        bx = int(q["board_center_x_norm"] * 4)
+        by = int(q["board_center_y_norm"] * 3)
+        bx = max(0, min(3, bx))
+        by = max(0, min(2, by))
+        bins.setdefault((bx, by), []).append(c)
+
+    selected = []
+
+    # Round-robin selection from bins
+    while len(selected) < max_selected:
+        added = False
+        for key in sorted(bins.keys()):
+            if bins[key]:
+                selected.append(bins[key].pop(0))
+                added = True
+                if len(selected) >= max_selected:
+                    break
+
+        if not added:
+            break
+
+    return selected
 
 
 def calibrate_pinhole(objpoints, imgpoints, image_size):
@@ -122,8 +234,10 @@ def compute_reprojection_error(model, objpoints, imgpoints, rvecs, tvecs, K, dis
 def calibrate_model(model, objpoints, imgpoints, image_size, criteria):
     if model == "pinhole":
         return calibrate_pinhole(objpoints, imgpoints, image_size)
+
     if model == "fisheye":
         return calibrate_fisheye(objpoints, imgpoints, image_size, criteria)
+
     raise ValueError(f"Unsupported model: {model}")
 
 
@@ -212,8 +326,24 @@ def main():
 
     parser.add_argument("--model", choices=["pinhole", "fisheye"], default="pinhole")
 
-    parser.add_argument("--auto-filter", action="store_true",
-                        help="iteratively remove images with high per-view RMSE")
+    # Pre-calibration quality filter
+    parser.add_argument("--enable-quality-filter", action="store_true")
+    parser.add_argument("--max-selected-images", type=int, default=150)
+    parser.add_argument("--min-selected-images", type=int, default=80)
+
+    parser.add_argument("--min-sharpness", type=float, default=80.0)
+    parser.add_argument("--min-mean-brightness", type=float, default=40.0)
+    parser.add_argument("--max-mean-brightness", type=float, default=220.0)
+
+    parser.add_argument("--min-board-area-ratio", type=float, default=0.03)
+    parser.add_argument("--max-board-area-ratio", type=float, default=0.75)
+
+    # Post-calibration RMSE filter
+    parser.add_argument(
+        "--auto-filter",
+        action="store_true",
+        help="iteratively remove images with high per-view RMSE",
+    )
     parser.add_argument("--max-per-view-rmse-px", type=float, default=1.5)
     parser.add_argument("--filter-iterations", type=int, default=3)
     parser.add_argument("--min-valid-images", type=int, default=15)
@@ -241,14 +371,16 @@ def main():
         1e-4,
     )
 
-    objpoints = []
-    imgpoints = []
-    used_images = []
     rejected_images = []
     image_size = None
+    quality_candidates = []
 
+    # ------------------------------------------------------------
+    # Step 1: detect chessboard and optionally quality-filter images
+    # ------------------------------------------------------------
     for img_path in image_paths:
         img = cv2.imread(str(img_path))
+
         if img is None:
             rejected_images.append({
                 "image": img_path.name,
@@ -271,26 +403,81 @@ def main():
 
         found, corners_subpix = find_corners(gray, pattern_size, criteria)
 
-        if found:
-            objpoints.append(objp.copy())
-            imgpoints.append(corners_subpix)
-            used_images.append(img_path.name)
-        else:
+        if preview_dir:
+            save_detection_preview(
+                preview_dir,
+                img_path,
+                img,
+                pattern_size,
+                corners_subpix,
+                found,
+            )
+
+        if not found:
             rejected_images.append({
                 "image": img_path.name,
                 "reason": "corners_not_found",
             })
+            continue
 
-        if preview_dir:
-            save_detection_preview(preview_dir, img_path, img, pattern_size, corners_subpix, found)
+        q = compute_image_quality(gray, corners_subpix, image_size)
 
-    if len(objpoints) < args.min_valid_images:
+        if args.enable_quality_filter:
+            ok_quality, reason = pass_quality_filter(q, args)
+            if not ok_quality:
+                item = {
+                    "image": img_path.name,
+                    "reason": reason,
+                }
+                item.update(q)
+                rejected_images.append(item)
+                continue
+
+        quality_candidates.append({
+            "image": img_path.name,
+            "image_path": img_path,
+            "objp": objp.copy(),
+            "corners": corners_subpix,
+            "quality": q,
+        })
+
+    if len(quality_candidates) < args.min_valid_images:
         raise RuntimeError(
-            f"Only {len(objpoints)} valid images found. "
+            f"Only {len(quality_candidates)} detected / quality-passed images found. "
             f"Need at least {args.min_valid_images}."
         )
 
-    # First calibration
+    # ------------------------------------------------------------
+    # Step 2: select diverse high-quality images
+    # ------------------------------------------------------------
+    if args.enable_quality_filter:
+        selected_candidates = select_diverse_images(
+            quality_candidates,
+            args.max_selected_images,
+        )
+    else:
+        selected_candidates = quality_candidates
+
+    if len(selected_candidates) < args.min_valid_images:
+        raise RuntimeError(
+            f"Only {len(selected_candidates)} selected valid images found. "
+            f"Need at least {args.min_valid_images}."
+        )
+
+    if len(selected_candidates) < args.min_selected_images:
+        print(
+            f"[WARN] Only {len(selected_candidates)} images selected. "
+            f"Recommended minimum is {args.min_selected_images}."
+        )
+
+    objpoints = [c["objp"] for c in selected_candidates]
+    imgpoints = [c["corners"] for c in selected_candidates]
+    used_images = [c["image"] for c in selected_candidates]
+    quality_results = [{"image": c["image"], **c["quality"]} for c in selected_candidates]
+
+    # ------------------------------------------------------------
+    # Step 3: initial calibration
+    # ------------------------------------------------------------
     rms, K, dist, rvecs, tvecs = calibrate_model(
         args.model,
         objpoints,
@@ -312,7 +499,9 @@ def main():
     filter_history = []
     bad_images_by_rmse = []
 
-    # Iterative filtering
+    # ------------------------------------------------------------
+    # Step 4: iterative RMSE filtering
+    # ------------------------------------------------------------
     if args.auto_filter:
         cur_names = used_images
         cur_obj = objpoints
@@ -380,14 +569,13 @@ def main():
             cur_obj = new_obj
             cur_img = new_img
 
-            # final assignment if this is last iteration
             rms, K, dist, rvecs, tvecs = rms_it, K_it, dist_it, rvecs_it, tvecs_it
             overall_rmse, per_view_rmse = overall_it, per_view_it
             used_images = cur_names
             objpoints = cur_obj
             imgpoints = cur_img
 
-        # final recalibration after last removal
+        # Final recalibration after last removal
         rms, K, dist, rvecs, tvecs = calibrate_model(
             args.model,
             objpoints,
@@ -406,6 +594,9 @@ def main():
             dist,
         )
 
+    # ------------------------------------------------------------
+    # Step 5: save outputs
+    # ------------------------------------------------------------
     per_view_results = []
     for name, rmse in zip(used_images, per_view_rmse):
         per_view_results.append({
@@ -445,12 +636,23 @@ def main():
             "square_size_m": args.square_size_m,
         },
         "num_input_images": len(image_paths),
+        "num_detected_images_before_quality_selection": len(quality_candidates),
         "num_valid_images": len(objpoints),
-        "num_initial_detected_images": len(used_images) + len(bad_images_by_rmse),
         "used_images": used_images,
         "rejected_images": rejected_images,
         "bad_images_by_rmse": bad_images_by_rmse,
         "per_view_results": per_view_results_sorted,
+        "quality_filter": {
+            "enabled": bool(args.enable_quality_filter),
+            "max_selected_images": args.max_selected_images,
+            "min_selected_images": args.min_selected_images,
+            "min_sharpness": args.min_sharpness,
+            "min_mean_brightness": args.min_mean_brightness,
+            "max_mean_brightness": args.max_mean_brightness,
+            "min_board_area_ratio": args.min_board_area_ratio,
+            "max_board_area_ratio": args.max_board_area_ratio,
+        },
+        "quality_results": quality_results,
         "filter": {
             "auto_filter": bool(args.auto_filter),
             "max_per_view_rmse_px": args.max_per_view_rmse_px,
@@ -467,7 +669,9 @@ def main():
     print("=== Calibration done ===")
     print(f"Model: {args.model}")
     print(f"Image size: {image_size[0]} x {image_size[1]}")
-    print(f"Valid images: {len(objpoints)} / {len(image_paths)}")
+    print(f"Input images: {len(image_paths)}")
+    print(f"Detected / quality-passed images before selection: {len(quality_candidates)}")
+    print(f"Valid images used: {len(objpoints)}")
     print(f"Calibration RMS: {rms:.6f}")
     print(f"Reprojection RMSE: {overall_rmse:.6f} px")
     print(f"Saved to: {output_json}")
@@ -475,6 +679,17 @@ def main():
     print("\nWorst per-view RMSE images:")
     for item in per_view_results_sorted[:10]:
         print(f"  {item['image']}: {item['per_view_rmse_px']:.3f} px")
+
+    if args.auto_filter:
+        print("\nFilter history:")
+        for h in filter_history:
+            print(
+                f"  iter {h['iteration']}: "
+                f"n={h['num_images']}, "
+                f"rmse={h['reprojection_rmse']:.3f}, "
+                f"max={h['max_per_view_rmse']:.3f}, "
+                f"bad={h['num_bad_images']}"
+            )
 
 
 if __name__ == "__main__":

@@ -1,0 +1,364 @@
+{
+  "model": "pinhole",
+  "image_width": 640,
+  "image_height": 480,
+  "K": [
+    [
+      319.46814406842924,
+      0.0,
+      305.11019183391664
+    ],
+    [
+      0.0,
+      321.7051916845595,
+      245.51305648316682
+    ],
+    [
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "dist": [
+    -0.31460147678778905,
+    0.05965967332892863,
+    -0.001577099841720718,
+    -0.0007795400004497805,
+    0.048336101982286106
+  ],
+  "calibration_rms": 0.5639028343337068,
+  "reprojection_rmse": 0.5639029611998148,
+  "board": {
+    "inner_corners_cols": 5,
+    "inner_corners_rows": 7,
+    "square_size_m": 0.031
+  },
+  "num_input_images": 60,
+  "num_valid_images": 22,
+  "num_initial_detected_images": 54,
+  "used_images": [
+    "calib_0004.png",
+    "calib_0005.png",
+    "calib_0006.png",
+    "calib_0007.png",
+    "calib_0008.png",
+    "calib_0009.png",
+    "calib_0010.png",
+    "calib_0039.png",
+    "calib_0040.png",
+    "calib_0041.png",
+    "calib_0042.png",
+    "calib_0045.png",
+    "calib_0046.png",
+    "calib_0047.png",
+    "calib_0048.png",
+    "calib_0049.png",
+    "calib_0050.png",
+    "calib_0053.png",
+    "calib_0054.png",
+    "calib_0055.png",
+    "calib_0058.png",
+    "calib_0059.png"
+  ],
+  "rejected_images": [
+    {
+      "image": "calib_0000.png",
+      "reason": "corners_not_found"
+    },
+    {
+      "image": "calib_0001.png",
+      "reason": "corners_not_found"
+    },
+    {
+      "image": "calib_0002.png",
+      "reason": "corners_not_found"
+    },
+    {
+      "image": "calib_0031.png",
+      "reason": "corners_not_found"
+    },
+    {
+      "image": "calib_0033.png",
+      "reason": "corners_not_found"
+    },
+    {
+      "image": "calib_0056.png",
+      "reason": "corners_not_found"
+    }
+  ],
+  "bad_images_by_rmse": [
+    {
+      "image": "calib_0003.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 2.6400907039642334
+    },
+    {
+      "image": "calib_0011.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 5.678138732910156
+    },
+    {
+      "image": "calib_0012.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 3.7635300159454346
+    },
+    {
+      "image": "calib_0013.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 3.5909032821655273
+    },
+    {
+      "image": "calib_0014.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 6.048006057739258
+    },
+    {
+      "image": "calib_0015.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 6.0482869148254395
+    },
+    {
+      "image": "calib_0016.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 5.8609514236450195
+    },
+    {
+      "image": "calib_0017.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 5.974054336547852
+    },
+    {
+      "image": "calib_0018.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 5.78149938583374
+    },
+    {
+      "image": "calib_0019.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 5.224505424499512
+    },
+    {
+      "image": "calib_0020.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 5.140265464782715
+    },
+    {
+      "image": "calib_0021.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 4.660166263580322
+    },
+    {
+      "image": "calib_0022.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 4.231814384460449
+    },
+    {
+      "image": "calib_0023.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 4.0416998863220215
+    },
+    {
+      "image": "calib_0024.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 5.435800552368164
+    },
+    {
+      "image": "calib_0025.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 5.832627296447754
+    },
+    {
+      "image": "calib_0026.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 5.5487799644470215
+    },
+    {
+      "image": "calib_0027.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 5.252476215362549
+    },
+    {
+      "image": "calib_0028.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 5.339160919189453
+    },
+    {
+      "image": "calib_0029.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 4.505376815795898
+    },
+    {
+      "image": "calib_0030.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 3.3380002975463867
+    },
+    {
+      "image": "calib_0032.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 4.641584873199463
+    },
+    {
+      "image": "calib_0034.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 5.739443778991699
+    },
+    {
+      "image": "calib_0035.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 5.778270244598389
+    },
+    {
+      "image": "calib_0036.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 5.355072498321533
+    },
+    {
+      "image": "calib_0037.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 4.689326286315918
+    },
+    {
+      "image": "calib_0038.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 6.413294792175293
+    },
+    {
+      "image": "calib_0043.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 3.948085308074951
+    },
+    {
+      "image": "calib_0044.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 3.0491385459899902
+    },
+    {
+      "image": "calib_0051.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 3.004450559616089
+    },
+    {
+      "image": "calib_0052.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 4.075048923492432
+    },
+    {
+      "image": "calib_0057.png",
+      "reason": "high_per_view_rmse",
+      "per_view_rmse_px": 2.073638916015625
+    }
+  ],
+  "per_view_results": [
+    {
+      "image": "calib_0045.png",
+      "per_view_rmse_px": 0.9695885181427002
+    },
+    {
+      "image": "calib_0053.png",
+      "per_view_rmse_px": 0.9302964210510254
+    },
+    {
+      "image": "calib_0054.png",
+      "per_view_rmse_px": 0.8986844420433044
+    },
+    {
+      "image": "calib_0039.png",
+      "per_view_rmse_px": 0.7877327799797058
+    },
+    {
+      "image": "calib_0058.png",
+      "per_view_rmse_px": 0.6858522891998291
+    },
+    {
+      "image": "calib_0042.png",
+      "per_view_rmse_px": 0.6256190538406372
+    },
+    {
+      "image": "calib_0059.png",
+      "per_view_rmse_px": 0.6042317748069763
+    },
+    {
+      "image": "calib_0006.png",
+      "per_view_rmse_px": 0.5595216155052185
+    },
+    {
+      "image": "calib_0055.png",
+      "per_view_rmse_px": 0.5498637557029724
+    },
+    {
+      "image": "calib_0005.png",
+      "per_view_rmse_px": 0.5160050392150879
+    },
+    {
+      "image": "calib_0041.png",
+      "per_view_rmse_px": 0.5057405829429626
+    },
+    {
+      "image": "calib_0046.png",
+      "per_view_rmse_px": 0.49041980504989624
+    },
+    {
+      "image": "calib_0050.png",
+      "per_view_rmse_px": 0.437389999628067
+    },
+    {
+      "image": "calib_0048.png",
+      "per_view_rmse_px": 0.41987305879592896
+    },
+    {
+      "image": "calib_0049.png",
+      "per_view_rmse_px": 0.41452938318252563
+    },
+    {
+      "image": "calib_0040.png",
+      "per_view_rmse_px": 0.3964698612689972
+    },
+    {
+      "image": "calib_0047.png",
+      "per_view_rmse_px": 0.39235398173332214
+    },
+    {
+      "image": "calib_0004.png",
+      "per_view_rmse_px": 0.349355012178421
+    },
+    {
+      "image": "calib_0007.png",
+      "per_view_rmse_px": 0.22881709039211273
+    },
+    {
+      "image": "calib_0008.png",
+      "per_view_rmse_px": 0.22248558700084686
+    },
+    {
+      "image": "calib_0010.png",
+      "per_view_rmse_px": 0.22173017263412476
+    },
+    {
+      "image": "calib_0009.png",
+      "per_view_rmse_px": 0.18304750323295593
+    }
+  ],
+  "filter": {
+    "auto_filter": true,
+    "max_per_view_rmse_px": 1.5,
+    "filter_iterations": 5,
+    "history": [
+      {
+        "iteration": 1,
+        "num_images": 54,
+        "calibration_rms": 3.7947563134363715,
+        "reprojection_rmse": 3.7947564125505253,
+        "max_per_view_rmse": 6.413294792175293,
+        "num_bad_images": 32
+      },
+      {
+        "iteration": 2,
+        "num_images": 22,
+        "calibration_rms": 0.5639028343337068,
+        "reprojection_rmse": 0.5639029611998148,
+        "max_per_view_rmse": 0.9695885181427002,
+        "num_bad_images": 0
+      }
+    ]
+  }
+}
