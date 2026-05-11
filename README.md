@@ -137,11 +137,11 @@ These files typically represent:
 Use `ffmpeg` to extract frames from a video file:
 
 ```bash
-ffmpeg -i video.avi frames/frame_%06d.png
+ffmpeg -i video_mjpg.avi frames/frame_%06d.png
 ```
 
 **Input**
-- raw video file, e.g. `video.avi`
+- raw video file, e.g. `video_mjpg.avi`
 
 **Output**
 - extracted image sequence in the `frames/` directory
@@ -169,7 +169,7 @@ Then:
 Use `tshrk` to extract timestamp:
 
 ```bash
-/raw_data_process/source/extract_lidar_packet_timestamps.sh your_capture.pcap lidar_packet_csvs \
+/raw_data_process/script/extract_lidar_packet_timestamps.sh your_capture.pcap lidar_packet_csvs \
     192.168.1.200 192.168.1.201 192.168.1.202
 ```
 
