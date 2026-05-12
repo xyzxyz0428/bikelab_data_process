@@ -78,48 +78,56 @@ CONFIG = [
         "required": True,
     },
     {
-        "prefixes": ["tobii"],
+        "prefix": "tobii",
         "sheet": "eyetracker",
         "time_mode": "tobii_recording_time",
         "keep_cols": [
             "t_unix_ns",
-            "Gaze point X [MCS px]",
-            "Gaze point Y [MCS px]",
-            "Gaze point 3D X [HUCS mm]",
-            "Gaze point 3D Y [HUCS mm]",
-            "Gaze point 3D Z [HUCS mm]",
-            "Gaze direction left X [HUCS norm]",
-            "Gaze direction left Y [HUCS norm]",
-            "Gaze direction left Z [HUCS norm]",
-            "Gaze direction right X [HUCS norm]",
-            "Gaze direction right Y [HUCS norm]",
-            "Gaze direction right Z [HUCS norm]",
-            "Pupil position left X [HUCS mm]",
-            "Pupil position left Y [HUCS mm]",
-            "Pupil position left Z [HUCS mm]",
-            "Pupil position right X [HUCS mm]",
-            "Pupil position right Y [HUCS mm]",
-            "Pupil position right Z [HUCS mm]",
-            "Pupil diameter left [mm]",
-            "Pupil diameter right [mm]",
-            "Pupil diameter filtered [mm]",
+            "Gaze point X",
+            "Gaze point Y",
+            "Gaze point 3D X",
+            "Gaze point 3D Y",
+            "Gaze point 3D Z",
+            "Gaze direction left X",
+            "Gaze direction left Y",
+            "Gaze direction left Z",
+            "Gaze direction right X",
+            "Gaze direction right Y",
+            "Gaze direction right Z",
+            "Pupil position left X",
+            "Pupil position left Y",
+            "Pupil position left Z",
+            "Pupil position right X",
+            "Pupil position right Y",
+            "Pupil position right Z",
+            "Pupil diameter left",
+            "Pupil diameter right",
+            "Pupil diameter filtered",
             "Validity left",
             "Validity right",
             "Eye movement type",
-            "Eye movement event duration [ms]",
+            "Eye movement event duration",
             "Eye movement type index",
-            "Fixation point X [MCS px]",
-            "Fixation point Y [MCS px]",
-            "Gyro X [°/s]",
-            "Gyro Y [°/s]",
-            "Gyro Z [°/s]",
-            "Accelerometer X [m/s²]",
-            "Accelerometer Y [m/s²]",
-            "Accelerometer Z [m/s²]",
-            "Magnetometer X [μT]",
-            "Magnetometer Y [μT]",
-            "Magnetometer Z [μT]",
+            "Fixation point X",
+            "Fixation point Y",
+            "Gyro X",
+            "Gyro Y",
+            "Gyro Z",
+            "Accelerometer X",
+            "Accelerometer Y",
+            "Accelerometer Z",
+            "Magnetometer X",
+            "Magnetometer Y",
+            "Magnetometer Z",
         ],
+        "rename_map": {}
+    },
+
+    {
+        "prefix": "fsr",
+        "sheet": "brake_sensor_right",
+        "time_mode": "t_unix_ns",
+        "keep_cols": ["t_unix_ns", "ok", "adc_raw", "force_total_g", "force_total_n", "error"],
         "rename_map": {},
         "required": True,
     },
@@ -133,39 +141,39 @@ CONFIG = [
         "required": False,
     },
     # Optional LiDAR frame CSVs exported from PointCloud2 topics
-    {
-        "prefixes": ["lidar_200_frames", "rslidar_200_frames", "lidar_frame_200"],
-        "sheet": "lidar_f_200",
-        "time_mode": "t_unix_ns",
-        "keep_cols": [
-            "t_unix_ns", "frame_id", "width", "height", "point_count",
-            "row_step", "point_step", "is_dense"
-        ],
-        "rename_map": {},
-        "required": False,
-    },
-    {
-        "prefixes": ["lidar_201_frames", "rslidar_201_frames", "lidar_frame_201"],
-        "sheet": "lidar_f_201",
-        "time_mode": "t_unix_ns",
-        "keep_cols": [
-            "t_unix_ns", "frame_id", "width", "height", "point_count",
-            "row_step", "point_step", "is_dense"
-        ],
-        "rename_map": {},
-        "required": False,
-    },
-    {
-        "prefixes": ["lidar_202_frames", "rslidar_202_frames", "lidar_frame_202"],
-        "sheet": "lidar_f_202",
-        "time_mode": "t_unix_ns",
-        "keep_cols": [
-            "t_unix_ns", "frame_id", "width", "height", "point_count",
-            "row_step", "point_step", "is_dense"
-        ],
-        "rename_map": {},
-        "required": False,
-    },
+    # {
+    #     "prefixes": "lidar_200_frames",
+    #     "sheet": "lidar_f_200",
+    #     "time_mode": "t_unix_ns",
+    #     "keep_cols": [
+    #         "t_unix_ns", "frame_id", "width", "height", "point_count",
+    #         "row_step", "point_step", "is_dense"
+    #     ],
+    #     "rename_map": {},
+    #     "required": False,
+    # },
+    # {
+    #     "prefixes": "lidar_201_frames",
+    #     "sheet": "lidar_f_201",
+    #     "time_mode": "t_unix_ns",
+    #     "keep_cols": [
+    #         "t_unix_ns", "frame_id", "width", "height", "point_count",
+    #         "row_step", "point_step", "is_dense"
+    #     ],
+    #     "rename_map": {},
+    #     "required": False,
+    # },
+    # {
+    #     "prefixes": "lidar_202_frames",
+    #     "sheet": "lidar_f_202",
+    #     "time_mode": "t_unix_ns",
+    #     "keep_cols": [
+    #         "t_unix_ns", "frame_id", "width", "height", "point_count",
+    #         "row_step", "point_step", "is_dense"
+    #     ],
+    #     "rename_map": {},
+    #     "required": False,
+    # },
 ]
 
 
@@ -228,10 +236,10 @@ def sanitize_time_column_ns(t_ns: pd.Series, file_name: str) -> pd.Series:
     return s.astype("Int64")
 
 
-def find_matching_file(input_dir: Path, prefixes: List[str]) -> Optional[Path]:
+def find_matching_file(input_dir: Path, prefixes: list[str]):
     candidates = []
     for pfx in prefixes:
-        matches = sorted(input_dir.glob(f"{pfx}*"))
+        matches = sorted(input_dir.rglob(f"{pfx}*"))
         matches = [
             m for m in matches
             if m.is_file() and m.suffix.lower() in [".csv", ".txt", ".xlsx", ".xlsm", ".xls"]
@@ -287,23 +295,45 @@ def add_unified_time_column(df: pd.DataFrame, time_mode: str, file_name: str) ->
         df["t_unix_ns"] = pd.to_numeric(df[src], errors="coerce").astype("Int64")
 
     elif time_mode == "tobii_recording_time":
-        required = ["Recording date UTC", "Recording start time UTC", "Recording timestamp [μs]"]
-        missing = [c for c in required if c not in df.columns]
-        if missing:
-            raise ValueError(
-                f"{file_name}: missing columns {missing}\nAvailable columns: {list(df.columns)}"
+        # Priority 1: if t_unix_ns already exists, use it directly
+        if "t_unix_ns" in df.columns:
+            df["t_unix_ns"] = pd.to_numeric(df["t_unix_ns"], errors="coerce").astype("Int64")
+
+        # Priority 2: reconstruct from UTC date + UTC start time + recording timestamp
+        else:
+            required_base = ["Recording date UTC", "Recording start time UTC"]
+            missing_base = [c for c in required_base if c not in df.columns]
+            if missing_base:
+                raise ValueError(
+                    f"{csv_name}: missing columns {missing_base}\n"
+                    f"Available columns: {list(df.columns)}"
+                )
+
+            # support both 'Recording timestamp [μs]' and 'Recording timestamp'
+            if "Recording timestamp [μs]" in df.columns:
+                rec_ts = pd.to_numeric(df["Recording timestamp [μs]"], errors="coerce")
+                rec_factor = 1000  # us -> ns
+            elif "Recording timestamp" in df.columns:
+                rec_ts = pd.to_numeric(df["Recording timestamp"], errors="coerce")
+                # Pro Lab export is usually in microseconds
+                rec_factor = 1000
+            else:
+                raise ValueError(
+                    f"{csv_name}: missing 'Recording timestamp [μs]' or 'Recording timestamp'\n"
+                    f"Available columns: {list(df.columns)}"
+                )
+
+            base_dt = pd.to_datetime(
+                df["Recording date UTC"].astype(str).str.strip() + " " +
+                df["Recording start time UTC"].astype(str).str.strip(),
+                errors="coerce"
             )
 
-        base_dt = pd.to_datetime(
-            df["Recording date UTC"].astype(str).str.strip() + " " +
-            df["Recording start time UTC"].astype(str).str.strip(),
-            errors="coerce"
-        )
-        rec_us = pd.to_numeric(df["Recording timestamp [μs]"], errors="coerce")
-        base_ns = pd.Series(base_dt.view("int64"), index=df.index)
-        base_ns = base_ns.where(base_dt.notna(), pd.NA)
-        t_ns = base_ns + rec_us * 1000
-        df["t_unix_ns"] = pd.array(t_ns, dtype="Int64")
+            base_ns = pd.Series(base_dt.view("int64"), index=df.index)
+            base_ns = base_ns.where(base_dt.notna(), pd.NA)
+
+            t_ns = base_ns + rec_ts * rec_factor
+            df["t_unix_ns"] = pd.array(t_ns, dtype="Int64")
 
     else:
         raise ValueError(f"{file_name}: unknown time_mode '{time_mode}'")
@@ -311,6 +341,18 @@ def add_unified_time_column(df: pd.DataFrame, time_mode: str, file_name: str) ->
     df["t_unix_ns"] = sanitize_time_column_ns(df["t_unix_ns"], file_name)
     return df
 
+def find_file_by_prefix(input_dir: Path, prefix: str) -> Path:
+    matches = sorted(input_dir.rglob(f"{prefix}*"))
+    matches = [
+        m for m in matches
+        if m.is_file() and m.suffix.lower() in [".csv", ".txt", ".xlsx", ".xlsm", ".xls"]
+    ]
+
+    if not matches:
+        raise FileNotFoundError(f"No file found in {input_dir} with prefix '{prefix}'")
+    if len(matches) > 1:
+        print(f"Warning: multiple files found for prefix '{prefix}', using: {matches[0].name}")
+    return matches[0]
 
 def load_trim_and_filter(file_path: Path, cfg: dict, start_unix_ns: int, end_unix_ns: int) -> pd.DataFrame:
     df = read_table_robust(file_path)
@@ -354,13 +396,16 @@ def main():
     sheet_data = []
 
     for cfg in CONFIG:
-        file_path = find_matching_file(input_dir, cfg["prefixes"])
+        if "prefixes" in cfg:
+            file_path = find_matching_file(input_dir, cfg["prefixes"])
+        else:
+            file_path = find_file_by_prefix(input_dir, cfg["prefix"])
         if file_path is None:
             if cfg.get("required", True):
                 raise FileNotFoundError(
-                    f"No file found in {input_dir} matching any of prefixes {cfg['prefixes']}"
+                    f"No file found in {input_dir} matching any of prefixes {cfg.get('prefixes', cfg.get('prefix'))}"
                 )
-            print(f"Info: optional stream not found for prefixes {cfg['prefixes']}; skipped.")
+            print(f"Info: optional stream not found for prefixes {cfg.get('prefixes', cfg.get('prefix'))}; skipped.")
             continue
 
         df = load_trim_and_filter(file_path, cfg, args.start_unix_ns, args.end_unix_ns)
