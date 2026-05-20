@@ -169,7 +169,7 @@ Then:
 Use `tshrk` to extract timestamp:
 
 ```bash
-/raw_data_process/script/extract_lidar_packet_timestamps.sh your_capture.pcap lidar_packet_csvs \
+raw_data_process/script/extract_lidar_packet_timestamps.sh your_capture.pcap lidar_packet_csvs \
     192.168.1.200 192.168.1.201 192.168.1.202
 ```
 
@@ -188,7 +188,7 @@ Use `tshrk` to extract timestamp:
 Use `ros2_unbag` to export the desired topic from a ROS 2 `.db3` bag file:
 
 ```bash
-ros2 unbag /raw_data_process/source/rosbag2_2026_03_10-17_10_36/rosbag2_2026_03_10-17_10_36_0.db3   --output-dir /raw_data_process/source   --naming "%name"   --export /ubx_nav_pvt:table/csv@single_file
+ros2 unbag raw_data_process/source/rosbag2_2026_03_10-17_10_36/rosbag2_2026_03_10-17_10_36_0.db3   --output-dir /raw_data_process/source   --naming "%name"   --export /ubx_nav_pvt:table/csv@single_file
 ```
 
 **Input**
@@ -210,7 +210,7 @@ ros2 unbag /raw_data_process/source/rosbag2_2026_03_10-17_10_36/rosbag2_2026_03_
 After selecting the valid time interval, merge relevant CSV files and export them as a single Excel workbook.
 
 ```bash
-python3 /raw_data_process/script/merge_bikelab_csvs_to_xlsx.py   -i /raw_data_process/source   -o /raw_data_process/result/bike_interface_merged.xlsx   --start-unix-ns 1773159067578250000   --end-unix-ns 1773159563211650000
+python3 raw_data_process/script/merge_bikelab_csvs_to_xlsx.py   -i /raw_data_process/source   -o /raw_data_process/result/bike_interface_merged.xlsx   --start-unix-ns 1773159067578250000   --end-unix-ns 1773159563211650000
 ```
 
 **Input**
