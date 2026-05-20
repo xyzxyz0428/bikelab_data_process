@@ -132,7 +132,7 @@ These files typically represent:
 
 ## 1.2 Camera data
 
-### Step 1: Convert video to image frames
+### Step 1: Convert video to image frames (optional for headpose estimation)
 
 Use `ffmpeg` to extract frames from a video file:
 
@@ -164,7 +164,7 @@ Then:
 
 ## 1.3 lidar data
 
-### Step 1: Convert pcap to csv for timestamp exctraction
+### Step 1: Convert pcap to csv for timestamp exctraction 
 
 Use `tshrk` to extract timestamp:
 
