@@ -164,21 +164,18 @@ Then:
 
 ## 1.3 lidar data
 
-### Step 1: Convert pcap to csv for timestamp exctraction 
+### Ros bag generation
 
-Use `tshrk` to extract timestamp:
+use vendor sdk (https://github.com/RoboSense-LiDAR/rslidar_sdk)
+ to generate rosbag with 3 lidar topics from pcap file.
+```bash
+roslaunch rslidar_sdk start.launch
+```
+### extract pcd from rosbag
 
 ```bash
-raw_data_process/script/extract_lidar_packet_timestamps.sh your_capture.pcap lidar_packet_csvs \
-    192.168.1.200 192.168.1.201 192.168.1.202
+export_lidar_frame_info_ros1.py --bag bagfile.bag --topic /rs_points_200  /rs_points_200  /rs_points_200 --out outdir
 ```
-
-**Input**
-- your_capture.pcap
-
-**Output**
-- extracted csv files in "lidar_packet_csvs \" directory
-
 ---
 
 ## 1.4 GPS processing
