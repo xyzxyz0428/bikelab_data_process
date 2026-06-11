@@ -5,7 +5,7 @@
 The repository currently includes two released code modules and one additional documented processing component:
 
 1. **raw_data_process** – preprocessing of raw multimodal recordings  
-2. **headpose_estimation** – camera calibration, helmet rig calibration, head pose estimation, and result analysis  
+2. **gaze representation pipline with headpose_estimation** – camera calibration, helmet rig calibration, head pose estimation, and result analysis  
 3. **lidar_data_process** – LiDAR processing workflow documentation, LiDAR-to-LiDAR calibration preparation, and configuration support for a vendor SDK pipeline  
 4. **GPS fusion** – configuration and dataprocessing to support for a open source GPS& fusion package
 The goal of this project is to convert raw experimental recordings into structured, analysis-ready outputs while keeping the processing workflow as transparent and reproducible as possible.
