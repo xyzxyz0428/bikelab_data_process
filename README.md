@@ -198,8 +198,6 @@ ros2 unbag raw_data_process/source/rosbag2_2026_03_10-17_10_36/rosbag2_2026_03_1
   --export /ubx_nav_cov:table/csv@single_file \
   --export /ubx_nav_status:table/csv@single_file \
   --export /ubx_nav_sat:table/csv@single_file \
-  --export /ubx_nav_sig:table/csv@single_file \
-  --export /ubx_nav_dop:table/csv@single_file \
   --export /ubx_rxm_rtcm:table/csv@single_file
 ```
 ---
