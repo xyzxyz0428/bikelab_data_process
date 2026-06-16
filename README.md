@@ -212,7 +212,7 @@ run script extraction.py
 ```bash
 python3 cut_bikelab_streams.py \
   --input-dir /raw_data_process/source \
-  --output-dir /raw_data_process/source/trimmed_session_001 \
+  --output-dir /raw_data_process/source/cut/ \
   --start-unix-ns 1773159006000000000 \
   --end-unix-ns   1773159123000000000
 ```
