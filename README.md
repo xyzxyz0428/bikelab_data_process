@@ -119,6 +119,7 @@ speed_decoded_20260310_170338.csv
 rally_payload_decoded_20260310_170337.csv
 imu_20260310_170336.csv
 rosbag2_2026_03_10-17_10_36/
+brake_sensors_force_20260603_152250.csv
 ```
 Depending on the experiment and the export stage, additional files may also be present.
 These files typically represent:
