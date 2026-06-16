@@ -128,7 +128,9 @@ These files typically represent:
 - `speed_decoded_*.csv` – decoded wheel speed or speed sensor output  
 - `rally_payload_decoded_*.csv` – decoded payload / interface data  
 - `imu_*.csv` – inertial measurement data  
-- `rosbag2_*` – raw ROS 2 bag folder containing recorded GNSS topics  
+- `rosbag2_*` – raw ROS 2 bag folder containing recorded GNSS topics
+- brake_sensors_force_*` – brake sensors data
+ 
 ---
 
 ## 1.2 Camera data
