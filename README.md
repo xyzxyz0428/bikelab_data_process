@@ -188,18 +188,19 @@ export_lidar_frame_info_ros1.py --bag bagfile.bag --topic /rs_points_200  /rs_po
 Use `ros2_unbag` to export the desired topic from a ROS 2 `.db3` bag file:
 
 ```bash
-ros2 unbag raw_data_process/source/rosbag2_2026_03_10-17_10_36/rosbag2_2026_03_10-17_10_36_0.db3   --output-dir /raw_data_process/source   --naming "%name"   --export /ubx_nav_pvt:table/csv@single_file
-```
-
-**Input**
-- ROS 2 bag file (`.db3`)  
-- topic: `/ubx_nav_pvt`  
-
-**Output**
-- CSV export of the selected topic in `exports_csv/`
-
-**Purpose**
-- convert ROS-native data into tabular files that are easier to inspect and merge  
+ros2 unbag raw_data_process/source/rosbag2_2026_03_10-17_10_36/rosbag2_2026_03_10-17_10_36_0.db3 \
+  --output-dir /raw_data_process/source/gps_csv \
+  --naming "%name" \
+  --export /fix:table/csv@single_file \
+  --export /ubx_nav_pvt:table/csv@single_file \
+  --export /ubx_nav_hp_pos_llh:table/csv@single_file \
+  --export /ubx_nav_vel_ned:table/csv@single_file \
+  --export /ubx_nav_cov:table/csv@single_file \
+  --export /ubx_nav_status:table/csv@single_file \
+  --export /ubx_nav_sat:table/csv@single_file \
+  --export /ubx_nav_sig:table/csv@single_file \
+  --export /ubx_nav_dop:table/csv@single_file \
+  --export /ubx_rxm_rtcm:table/csv@single_file
 
 ---
 
