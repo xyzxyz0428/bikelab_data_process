@@ -526,23 +526,21 @@ def main() -> None:
             ha="left", va="bottom", fontsize=7.0, fontweight="normal",
             clip_on=False)
 
-    # (b) C1--C2 NTP. The absolute system-time offset is plotted; the label
-    # reports its mean and P95.
+    # (b) C1--C2 NTP. Plot the signed device-host offset. The annotation
+    # reports mean and P95 magnitudes so that the sign is not lost in the
+    # summary statistic.
     ax = axes[0, 1]
     c1_t_global = elapsed_from(c1, global_start)
-    c1_plot_offset_us = np.abs(c1_offset) * 1e6
-    ax.plot(c1_t_global, c1_plot_offset_us, color=COLORS["blue"], lw=1.0,
-            label="Absolute offset")
+    c1_plot_offset_us = c1_offset * 1e6
+    ax.plot(c1_t_global, c1_plot_offset_us, color=COLORS["blue"], lw=1.0)
     ax.axhline(0, color=COLORS["black"], lw=0.7)
-    ax.axhline(float(np.percentile(c1_plot_offset_us, 95)), color=COLORS["blue"],
-               lw=0.8, ls="--", alpha=0.8)
     chrony_sync_count = sum(str(row.get("ntp_synchronized", "")).lower() in {"yes", "true", "1"} for row in c1)
     chrony_sync_fraction = chrony_sync_count / len(c1) if c1 else 0.0
     ax.text(
         0.98,
         0.97,
-        f"Absolute offset mean {np.mean(c1_plot_offset_us):.3f} µs\n"
-        f"Absolute offset P95 {np.percentile(c1_plot_offset_us, 95):.3f} µs\n"
+        f"|device–host offset| mean {np.mean(np.abs(c1_plot_offset_us)):.3f} µs\n"
+        f"|device–host offset| P95 {np.percentile(np.abs(c1_plot_offset_us), 95):.3f} µs\n"
         f"NTP synchronised: {chrony_sync_count}/{len(c1)} ({chrony_sync_fraction * 100:.1f}%)",
         transform=ax.transAxes,
         ha="right",
@@ -556,9 +554,8 @@ def main() -> None:
             ha="left", va="bottom", fontsize=7.0, fontweight="normal",
             clip_on=False)
     ax.set_xlabel("Elapsed time (s)")
-    ax.set_ylabel("Absolute offset (µs)")
+    ax.set_ylabel("Device–host offset (µs)")
     ax.set_xlim(0, duration_s)
-    ax.legend(frameon=False, loc="lower left", fontsize=6.8, borderaxespad=0.0)
 
     # (c) LiDAR PTP.  Status is represented explicitly in the annotation and
     # in each legend entry; the curves show the vendor-reported timing field.
@@ -575,7 +572,7 @@ def main() -> None:
         raw_ns = numbers(rows, "ptp_master_offset_raw")
         count = min(t.size, raw_ns.size)
         if count:
-            offset_us = np.abs(raw_ns[:count]) / 1000.0
+            offset_us = raw_ns[:count] / 1000.0
             ax.plot(t[:count], offset_us,
                     color=lidar_palette[label], lw=0.9, label=lidar_labels[label])
             lidar_stats[label] = {
@@ -592,9 +589,9 @@ def main() -> None:
     ax.text(
         0.98,
         0.97,
-        f"Near offset mean/P95 {lidar_stats['near']['mean_abs_us']:.1f}/{lidar_stats['near']['p95_abs_us']:.1f} µs; "
-        f"Front offset mean/P95 {lidar_stats['front']['mean_abs_us']:.1f}/{lidar_stats['front']['p95_abs_us']:.1f} µs\n"
-        f"Rear offset mean/P95 {lidar_stats['rear']['mean_abs_us']:.1f}/{lidar_stats['rear']['p95_abs_us']:.1f} µs\n"
+        f"Near |offset| mean/P95 {lidar_stats['near']['mean_abs_us']:.1f}/{lidar_stats['near']['p95_abs_us']:.1f} µs\n"
+        f"Front |offset| mean/P95 {lidar_stats['front']['mean_abs_us']:.1f}/{lidar_stats['front']['p95_abs_us']:.1f} µs\n"
+        f"Rear |offset| mean/P95 {lidar_stats['rear']['mean_abs_us']:.1f}/{lidar_stats['rear']['p95_abs_us']:.1f} µs\n"
         f"PTP locked: {locked_lidar_samples:,}/{total_lidar_samples:,} ({lidar_sync_fraction * 100:.1f}%)",
         transform=ax.transAxes,
         ha="right",
@@ -608,7 +605,7 @@ def main() -> None:
             ha="left", va="bottom", fontsize=7.0, fontweight="normal",
             clip_on=False)
     ax.set_xlabel("Elapsed time (s)")
-    ax.set_ylabel("Absolute offset (µs)")
+    ax.set_ylabel("Device–host offset (µs)")
     ax.set_xlim(0, duration_s)
     ax.legend(frameon=True, framealpha=0.78, loc="center left",
               bbox_to_anchor=(0.01, 0.55), ncol=1, fontsize=6.2,
@@ -618,11 +615,11 @@ def main() -> None:
     # NTP state remains in the annotation and summary tables, but is not drawn
     # on a second axis with a separate Yes/No scale.
     ax = axes[1, 1]
-    tobii_plot_offset_us = np.abs(tobii_offset_us)
+    tobii_plot_offset_us = tobii_offset_us
     ax.plot(tobii_t, tobii_plot_offset_us, color=COLORS["vermillion"], lw=1.0,
-            label="Absolute offset")
+            label="Device–host offset")
     ax.set_xlabel("Elapsed time (s)")
-    ax.set_ylabel("Absolute offset (µs)")
+    ax.set_ylabel("Device–host offset (µs)")
     ax.set_xlim(0, duration_s)
     sync = np.asarray([1.0 if row.get("ntp_is_synchronized") == "True" else 0.0 for row in tobii])
     tobii_sync_count = int(np.sum(sync))
@@ -630,8 +627,8 @@ def main() -> None:
     ax.text(
         0.98,
         0.97,
-        f"Absolute offset mean {np.mean(tobii_plot_offset_us):.0f} µs\n"
-        f"Absolute offset P95 {np.percentile(tobii_plot_offset_us, 95):.0f} µs\n"
+        f"|device–host offset| mean {np.mean(np.abs(tobii_plot_offset_us)):.0f} µs\n"
+        f"|device–host offset| P95 {np.percentile(np.abs(tobii_plot_offset_us), 95):.0f} µs\n"
         f"NTP synchronised: {tobii_sync_count}/{len(sync)} ({tobii_sync_fraction * 100:.1f}%)",
         transform=ax.transAxes,
         ha="right",
@@ -714,13 +711,15 @@ mismatch should be resolved or documented before publication.
     (output / "figure_caption.txt").write_text(
         "System-wide time synchronisation validation from a 30-minute recording. "
         "(a) Logger coverage and the common all-stream overlap. (b) Computer 1–2 "
-        "NTP offset relative to the Computer 2 local reference, including the "
-        "mean and P95 absolute offset. (c) Vendor-reported PTP lock state and "
-        "timing fields for the near, front and rear LiDARs. (d) Tobii Glasses 3 "
-        "device-host midpoint offset; the recorded NTP synchronisation count is "
-        "reported in the panel annotation. All "
+        "signed device-host offset relative to the Computer 2 local reference; "
+        "the panel annotation gives mean and P95 absolute magnitudes. (c) "
+        "Vendor-reported PTP lock state and signed device-host timing fields for "
+        "the near, front and rear LiDARs. (d) Tobii Glasses 3 signed device-host "
+        "midpoint offset; the recorded NTP synchronisation count is reported in "
+        "the panel annotation. All "
         "horizontal axes use elapsed seconds from the earliest logger sample. "
-        "Panels (b)–(d) plot absolute clock offsets in microseconds (µs). Bpearl "
+        "Panels (b)–(d) plot signed device-host offsets in microseconds (µs); "
+        "the mean and P95 annotations are absolute magnitudes. Bpearl "
         "time_sync_data and Helios ptp_master_offset are treated as nanoseconds "
         "and divided by 1000; the Tobii API value is recorded in milliseconds "
         "and multiplied by 1000. The Bpearl near sensor uses PTP-E2E-L4 on PTP "
