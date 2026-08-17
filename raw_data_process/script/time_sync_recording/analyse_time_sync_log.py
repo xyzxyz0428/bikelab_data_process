@@ -522,8 +522,8 @@ def main() -> None:
     ax.set_xlim(0, duration_s)
     ax.set_ylim(-0.6, len(all_streams) - 0.35)
     ax.grid(axis="x")
-    ax.text(0.98, 0.97, "(a) Recording coverage", transform=ax.transAxes,
-            ha="right", va="top", fontsize=7.0, fontweight="normal",
+    ax.text(0.02, 0.97, "(a) Recording coverage", transform=ax.transAxes,
+            ha="left", va="top", fontsize=7.0, fontweight="normal",
             bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.78, "pad": 1.5})
 
     # (b) C1--C2 NTP. The signed estimate is plotted; the label above the
@@ -543,7 +543,6 @@ def main() -> None:
     ax.text(
         0.98,
         0.97,
-        f"(b) Computer 1–2 NTP\n"
         f"|offset| mean {np.mean(abs_offset):.3f} µs\n"
         f"|offset| P95 {np.percentile(abs_offset, 95):.3f} µs\n"
         f"NTP synchronised: {chrony_sync_count}/{len(c1)} ({chrony_sync_fraction * 100:.1f}%)",
@@ -555,6 +554,9 @@ def main() -> None:
         linespacing=1.15,
         bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.78, "pad": 1.5},
     )
+    ax.text(0.02, 0.97, "(b) Computer 1–2 NTP", transform=ax.transAxes,
+            ha="left", va="top", fontsize=7.0, fontweight="normal",
+            bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.78, "pad": 1.5})
     ax.set_xlabel("Elapsed time (s)")
     ax.set_ylabel("Clock offset (µs)")
     ax.set_xlim(0, duration_s)
@@ -593,7 +595,6 @@ def main() -> None:
     ax.text(
         0.98,
         0.97,
-        "(c) LiDAR PTP\n"
         f"Near mean/P95 {lidar_stats['near']['mean_abs_us']:.1f}/{lidar_stats['near']['p95_abs_us']:.1f} µs; "
         f"Front {lidar_stats['front']['mean_abs_us']:.1f}/{lidar_stats['front']['p95_abs_us']:.1f} µs\n"
         f"Rear mean/P95 {lidar_stats['rear']['mean_abs_us']:.1f}/{lidar_stats['rear']['p95_abs_us']:.1f} µs\n"
@@ -606,11 +607,14 @@ def main() -> None:
         linespacing=1.15,
         bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.78, "pad": 1.5},
     )
+    ax.text(0.02, 0.97, "(c) LiDAR PTP", transform=ax.transAxes,
+            ha="left", va="top", fontsize=7.0, fontweight="normal",
+            bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.78, "pad": 1.5})
     ax.set_xlabel("Elapsed time (s)")
     ax.set_ylabel("PTP offset (µs)")
     ax.set_xlim(0, duration_s)
-    ax.legend(frameon=False, loc="upper left", bbox_to_anchor=(0.0, -0.26),
-              ncol=3, fontsize=6.8, borderaxespad=0.0)
+    ax.legend(frameon=True, framealpha=0.78, loc="lower left",
+              ncol=1, fontsize=6.2, borderpad=0.3, handlelength=1.6)
 
     # (d) Tobii NTP.  Only the device-host offset is plotted.  The recorded
     # NTP state remains in the annotation and summary tables, but is not drawn
@@ -627,7 +631,6 @@ def main() -> None:
     ax.text(
         0.98,
         0.97,
-        f"(d) Tobii NTP\n"
         f"|device–host midpoint| mean {np.mean(np.abs(tobii_offset_us)):.0f} µs\n"
         f"|device–host midpoint| P95 {np.percentile(np.abs(tobii_offset_us), 95):.0f} µs\n"
         f"NTP synchronised: {tobii_sync_count}/{len(sync)} ({tobii_sync_fraction * 100:.1f}%)",
@@ -639,6 +642,9 @@ def main() -> None:
         linespacing=1.15,
         bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.78, "pad": 1.5},
     )
+    ax.text(0.02, 0.97, "(d) Tobii NTP", transform=ax.transAxes,
+            ha="left", va="top", fontsize=7.0, fontweight="normal",
+            bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.78, "pad": 1.5})
 
     fig.suptitle("System-wide time synchronisation validation", fontsize=11, y=0.97)
     save_figure(fig, figures, "system_wide_time_synchronisation_validation")
