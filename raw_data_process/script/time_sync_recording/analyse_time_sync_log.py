@@ -526,25 +526,23 @@ def main() -> None:
             ha="left", va="bottom", fontsize=7.0, fontweight="normal",
             clip_on=False)
 
-    # (b) C1--C2 NTP. The signed estimate is plotted; the label above the
-    # axes reports the absolute-offset mean and P95.
+    # (b) C1--C2 NTP. The absolute system-time offset is plotted; the label
+    # reports its mean and P95.
     ax = axes[0, 1]
     c1_t_global = elapsed_from(c1, global_start)
-    ax.plot(c1_t_global, c1_offset * 1e6, color=COLORS["blue"], lw=1.0,
-            label="System-time offset")
-    ax.plot(c1_t_global, c1_last * 1e6, color=COLORS["orange"], lw=0.9,
-            alpha=0.9, label="Last clock update")
+    c1_plot_offset_us = np.abs(c1_offset) * 1e6
+    ax.plot(c1_t_global, c1_plot_offset_us, color=COLORS["blue"], lw=1.0,
+            label="Absolute offset")
     ax.axhline(0, color=COLORS["black"], lw=0.7)
-    abs_offset = np.abs(c1_offset) * 1e6
-    ax.axhline(float(np.percentile(abs_offset, 95)), color=COLORS["blue"],
+    ax.axhline(float(np.percentile(c1_plot_offset_us, 95)), color=COLORS["blue"],
                lw=0.8, ls="--", alpha=0.8)
     chrony_sync_count = sum(str(row.get("ntp_synchronized", "")).lower() in {"yes", "true", "1"} for row in c1)
     chrony_sync_fraction = chrony_sync_count / len(c1) if c1 else 0.0
     ax.text(
         0.98,
         0.97,
-        f"|offset| mean {np.mean(abs_offset):.3f} µs\n"
-        f"|offset| P95 {np.percentile(abs_offset, 95):.3f} µs\n"
+        f"Absolute offset mean {np.mean(c1_plot_offset_us):.3f} µs\n"
+        f"Absolute offset P95 {np.percentile(c1_plot_offset_us, 95):.3f} µs\n"
         f"NTP synchronised: {chrony_sync_count}/{len(c1)} ({chrony_sync_fraction * 100:.1f}%)",
         transform=ax.transAxes,
         ha="right",
@@ -558,10 +556,9 @@ def main() -> None:
             ha="left", va="bottom", fontsize=7.0, fontweight="normal",
             clip_on=False)
     ax.set_xlabel("Elapsed time (s)")
-    ax.set_ylabel("Clock offset (µs)")
+    ax.set_ylabel("Absolute offset (µs)")
     ax.set_xlim(0, duration_s)
-    ax.legend(frameon=False, loc="upper left", bbox_to_anchor=(0.0, -0.26),
-              ncol=2, fontsize=6.8, borderaxespad=0.0)
+    ax.legend(frameon=False, loc="lower left", fontsize=6.8, borderaxespad=0.0)
 
     # (c) LiDAR PTP.  Status is represented explicitly in the annotation and
     # in each legend entry; the curves show the vendor-reported timing field.
@@ -578,7 +575,7 @@ def main() -> None:
         raw_ns = numbers(rows, "ptp_master_offset_raw")
         count = min(t.size, raw_ns.size)
         if count:
-            offset_us = raw_ns[:count] / 1000.0
+            offset_us = np.abs(raw_ns[:count]) / 1000.0
             ax.plot(t[:count], offset_us,
                     color=lidar_palette[label], lw=0.9, label=lidar_labels[label])
             lidar_stats[label] = {
@@ -611,7 +608,7 @@ def main() -> None:
             ha="left", va="bottom", fontsize=7.0, fontweight="normal",
             clip_on=False)
     ax.set_xlabel("Elapsed time (s)")
-    ax.set_ylabel("PTP offset (µs)")
+    ax.set_ylabel("Absolute offset (µs)")
     ax.set_xlim(0, duration_s)
     ax.legend(frameon=True, framealpha=0.78, loc="lower left",
               ncol=1, fontsize=6.2, borderpad=0.3, handlelength=1.6)
@@ -620,10 +617,11 @@ def main() -> None:
     # NTP state remains in the annotation and summary tables, but is not drawn
     # on a second axis with a separate Yes/No scale.
     ax = axes[1, 1]
-    ax.plot(tobii_t, tobii_offset_us, color=COLORS["purple"], lw=1.0,
-            label="Offset")
+    tobii_plot_offset_us = np.abs(tobii_offset_us)
+    ax.plot(tobii_t, tobii_plot_offset_us, color=COLORS["purple"], lw=1.0,
+            label="Absolute offset")
     ax.set_xlabel("Elapsed time (s)")
-    ax.set_ylabel("Clock offset (µs)")
+    ax.set_ylabel("Absolute offset (µs)")
     ax.set_xlim(0, duration_s)
     sync = np.asarray([1.0 if row.get("ntp_is_synchronized") == "True" else 0.0 for row in tobii])
     tobii_sync_count = int(np.sum(sync))
@@ -631,8 +629,8 @@ def main() -> None:
     ax.text(
         0.98,
         0.97,
-        f"Offset mean {np.mean(np.abs(tobii_offset_us)):.0f} µs\n"
-        f"Offset P95 {np.percentile(np.abs(tobii_offset_us), 95):.0f} µs\n"
+        f"Absolute offset mean {np.mean(tobii_plot_offset_us):.0f} µs\n"
+        f"Absolute offset P95 {np.percentile(tobii_plot_offset_us, 95):.0f} µs\n"
         f"NTP synchronised: {tobii_sync_count}/{len(sync)} ({tobii_sync_fraction * 100:.1f}%)",
         transform=ax.transAxes,
         ha="right",
@@ -721,7 +719,7 @@ mismatch should be resolved or documented before publication.
         "device-host midpoint offset; the recorded NTP synchronisation count is "
         "reported in the panel annotation. All "
         "horizontal axes use elapsed seconds from the earliest logger sample. "
-        "All plotted clock offsets use microseconds (µs). Bpearl "
+        "Panels (b)–(d) plot absolute clock offsets in microseconds (µs). Bpearl "
         "time_sync_data and Helios ptp_master_offset are treated as nanoseconds "
         "and divided by 1000; the Tobii API value is recorded in milliseconds "
         "and multiplied by 1000. The Bpearl near sensor uses PTP-E2E-L4 on PTP "
