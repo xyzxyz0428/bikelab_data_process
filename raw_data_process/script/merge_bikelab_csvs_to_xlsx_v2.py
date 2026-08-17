@@ -78,8 +78,8 @@ CONFIG = [
         "required": True,
     },
     {
-        "prefix": "tobii",
-        "sheet": "eyetracker",
+        "prefixes": ["eyetracker_raw", "tobii"],
+        "sheet": "eyetracker_raw",
         "time_mode": "tobii_recording_time",
         "keep_cols": [
             "t_unix_ns",
@@ -126,32 +126,33 @@ CONFIG = [
             "Magnetometer Y",
             "Magnetometer Z",
         ],
-        "rename_map": {}
+        "rename_map": {},
+        "required": False,
     },
 
     {
-        "prefix": "fsr",
-        "sheet": "brake_sensor_right",
+        "prefix": "brake_sensors",
+        "sheet": "brake_sensor",
         "time_mode": "t_unix_ns",
-        "keep_cols": ["t_unix_ns", "ok", "adc_raw", "force_total_g", "force_total_n", "error"],
+        "keep_cols": ["t_unix_ns","ok_left","left_adc_raw","left_force_g","left_force_n","left_error","ok_right","right_adc_raw","right_force_g","right_force_n","right_error"],
         "rename_map": {},
         "required": True,
     },
     {
-        "prefixes": "back_camera_timestamps",
-        "sheet": "camera",
+        "prefixes": "timestamps",
+        "sheet": "back_camera",
         "time_mode": "camera_unix_ns",
-        "keep_cols": ["t_unix_ns","frame_idx"],
+        "keep_cols": ["t_unix_ns", "frame_idx"],
         "rename_map": {},
-        "required": True,
+        "required": False,
     },
     {
         "prefixes": "scene_timestamps",
-        "sheet": "camera",
+        "sheet": "scene_camera",
         "time_mode": "camera_unix_ns",
-        "keep_cols": ["t_unix_ns","frame_idx"],
+        "keep_cols": ["t_unix_ns", "frame_idx"],
         "rename_map": {},
-        "required": True,
+        "required": False,
     },
     # Optional LiDAR frame CSVs exported from PointCloud2 topics
     # {
@@ -408,7 +409,17 @@ def main():
 
     sheet_data = []
 
-    for cfg in CONFIG:
+    configs = list(CONFIG)
+    raw_eye_cfg = next(
+        (cfg for cfg in CONFIG if cfg.get("sheet") == "eyetracker_raw"), None
+    )
+    if raw_eye_cfg is not None and find_matching_file(input_dir, ["eyetracker_fixation"]):
+        fixation_cfg = dict(raw_eye_cfg)
+        fixation_cfg["prefixes"] = ["eyetracker_fixation"]
+        fixation_cfg["sheet"] = "eyetracker_fixation"
+        configs.append(fixation_cfg)
+
+    for cfg in configs:
         if "prefixes" in cfg:
             file_path = find_matching_file(input_dir, cfg["prefixes"])
         else:

@@ -17,12 +17,15 @@ def load_camera_json(path):
     return K, dist
 
 
-def make_detector(tag_family="tagStandard41h12", quad_decimate=1.0):
+def make_detector(tag_family="tagStandard41h12", quad_decimate=1.0, nthreads=1):
     if Detector is None:
         raise ImportError("pip install pupil-apriltags")
     return Detector(
         families=tag_family,
-        nthreads=4,
+        # pupil_apriltags 1.0.4.post11 can crash during multi-threaded detector
+        # teardown after all results have been written. One thread produces the
+        # same detections and exits cleanly in the current project environment.
+        nthreads=int(nthreads),
         quad_decimate=quad_decimate,
         quad_sigma=0.0,
         refine_edges=1,
