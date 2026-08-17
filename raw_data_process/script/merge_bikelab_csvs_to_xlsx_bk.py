@@ -45,8 +45,8 @@ CONFIG = [
         "rename_map": {}
     },
     {
-        "prefix": "tobii",
-        "sheet": "eyetracker",
+        "prefix": ["eyetracker_raw", "tobii"],
+        "sheet": "eyetracker_raw",
         "time_mode": "tobii_recording_time",
         "keep_cols": [
             "Gaze point X [MCS px]",
@@ -115,8 +115,12 @@ def read_table_robust(path: Path) -> pd.DataFrame:
 
     raise RuntimeError(f"Could not read file {path}: {last_err}")
 
-def find_file_by_prefix(input_dir: Path, prefix: str) -> Path:
-    matches = sorted(input_dir.glob(f"{prefix}*"))
+def find_file_by_prefix(input_dir: Path, prefix) -> Path:
+    prefixes = prefix if isinstance(prefix, (list, tuple)) else [prefix]
+    matches = []
+    for item in prefixes:
+        matches.extend(input_dir.glob(f"{item}*"))
+    matches = sorted(set(matches))
     matches = [m for m in matches if m.is_file() and m.suffix.lower() in [".csv", ".txt", ".xlsx", ".xlsm", ".xls"]]
 
     if not matches:
@@ -242,7 +246,22 @@ def main():
 
     sheet_data = []
 
-    for cfg in CONFIG:
+    configs = list(CONFIG)
+    raw_eye_cfg = next(
+        (cfg for cfg in CONFIG if cfg.get("sheet") == "eyetracker_raw"), None
+    )
+    if raw_eye_cfg is not None:
+        try:
+            find_file_by_prefix(input_dir, "eyetracker_fixation")
+        except FileNotFoundError:
+            pass
+        else:
+            fixation_cfg = dict(raw_eye_cfg)
+            fixation_cfg["prefix"] = "eyetracker_fixation"
+            fixation_cfg["sheet"] = "eyetracker_fixation"
+            configs.append(fixation_cfg)
+
+    for cfg in configs:
         csv_file = find_file_by_prefix(input_dir, cfg["prefix"])
         df = load_trim_and_filter(csv_file, cfg, start_unix_ns, end_unix_ns)
 

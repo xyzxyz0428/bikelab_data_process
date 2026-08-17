@@ -175,6 +175,8 @@ def main():
                     help="minimum number of distinct head tags required")
     ap.add_argument("--max-head-rmse-px", type=float, default=5.0,
                     help="maximum allowed head bundle reprojection RMSE")
+    ap.add_argument("--detector-threads", type=int, default=1,
+                    help="AprilTag detector threads (default: 1 for stable teardown)")
 
     args = ap.parse_args()
 
@@ -192,7 +194,11 @@ def main():
     T_H_T, head_tag_ids, head_tag_size_m = load_rig_calib(args.rig_calib)
     head_tag_ids = set(head_tag_ids)
 
-    detector = make_detector(tag_family=tag_family, quad_decimate=1.0)
+    detector = make_detector(
+        tag_family=tag_family,
+        quad_decimate=1.0,
+        nthreads=args.detector_threads,
+    )
 
     rows = load_timestamps_csv(args.timestamps_csv)
     frame_dir = Path(args.frame_dir)
