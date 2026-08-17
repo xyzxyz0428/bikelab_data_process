@@ -62,6 +62,6 @@ requires `robot_localization`.
 ## Data safety
 
 Processing scripts read raw data and write to a new output directory. Do not
-overwrite raw recordings or previous results. The repository contains code and
-small configuration files only; local bags, CSV/XLSX files, figures, logs and
+overwrite raw recordings or previous results. This cleanup adds no raw
+recordings or generated results; local bags, CSV/XLSX files, figures, logs and
 ROS build/install directories should remain outside commits.
