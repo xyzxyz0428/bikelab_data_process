@@ -589,9 +589,9 @@ def main() -> None:
     ax.text(
         0.98,
         0.97,
-        f"Near |offset| mean/P95 {lidar_stats['near']['mean_abs_us']:.1f}/{lidar_stats['near']['p95_abs_us']:.1f} µs\n"
-        f"Front |offset| mean/P95 {lidar_stats['front']['mean_abs_us']:.1f}/{lidar_stats['front']['p95_abs_us']:.1f} µs\n"
-        f"Rear |offset| mean/P95 {lidar_stats['rear']['mean_abs_us']:.1f}/{lidar_stats['rear']['p95_abs_us']:.1f} µs\n"
+        f"Near |device–host| mean/P95 {lidar_stats['near']['mean_abs_us']:.1f}/{lidar_stats['near']['p95_abs_us']:.1f} µs\n"
+        f"Front |device–host| mean/P95 {lidar_stats['front']['mean_abs_us']:.1f}/{lidar_stats['front']['p95_abs_us']:.1f} µs\n"
+        f"Rear |device–host| mean/P95 {lidar_stats['rear']['mean_abs_us']:.1f}/{lidar_stats['rear']['p95_abs_us']:.1f} µs\n"
         f"PTP locked: {locked_lidar_samples:,}/{total_lidar_samples:,} ({lidar_sync_fraction * 100:.1f}%)",
         transform=ax.transAxes,
         ha="right",
@@ -607,8 +607,8 @@ def main() -> None:
     ax.set_xlabel("Elapsed time (s)")
     ax.set_ylabel("Device–host offset (µs)")
     ax.set_xlim(0, duration_s)
-    ax.legend(frameon=True, framealpha=0.78, loc="center left",
-              bbox_to_anchor=(0.01, 0.55), ncol=1, fontsize=6.2,
+    ax.legend(frameon=True, framealpha=0.78, loc="lower left",
+              bbox_to_anchor=(0.01, 0.02), ncol=1, fontsize=6.2,
               borderpad=0.3, handlelength=1.6)
 
     # (d) Tobii NTP.  Only the device-host offset is plotted.  The recorded
