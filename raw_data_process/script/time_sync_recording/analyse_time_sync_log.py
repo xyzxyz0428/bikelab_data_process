@@ -522,9 +522,9 @@ def main() -> None:
     ax.set_xlim(0, duration_s)
     ax.set_ylim(-0.6, len(all_streams) - 0.35)
     ax.grid(axis="x")
-    ax.text(0.02, 0.97, "(a) Recording coverage", transform=ax.transAxes,
-            ha="left", va="top", fontsize=7.0, fontweight="normal",
-            bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.78, "pad": 1.5})
+    ax.text(0.02, 1.02, "(a) Recording coverage", transform=ax.transAxes,
+            ha="left", va="bottom", fontsize=7.0, fontweight="normal",
+            clip_on=False)
 
     # (b) C1--C2 NTP. The signed estimate is plotted; the label above the
     # axes reports the absolute-offset mean and P95.
@@ -554,9 +554,9 @@ def main() -> None:
         linespacing=1.15,
         bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.78, "pad": 1.5},
     )
-    ax.text(0.02, 0.97, "(b) Computer 1–2 NTP", transform=ax.transAxes,
-            ha="left", va="top", fontsize=7.0, fontweight="normal",
-            bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.78, "pad": 1.5})
+    ax.text(0.02, 1.02, "(b) Computer 1–2 NTP", transform=ax.transAxes,
+            ha="left", va="bottom", fontsize=7.0, fontweight="normal",
+            clip_on=False)
     ax.set_xlabel("Elapsed time (s)")
     ax.set_ylabel("Clock offset (µs)")
     ax.set_xlim(0, duration_s)
@@ -595,9 +595,9 @@ def main() -> None:
     ax.text(
         0.98,
         0.97,
-        f"Near mean/P95 {lidar_stats['near']['mean_abs_us']:.1f}/{lidar_stats['near']['p95_abs_us']:.1f} µs; "
-        f"Front {lidar_stats['front']['mean_abs_us']:.1f}/{lidar_stats['front']['p95_abs_us']:.1f} µs\n"
-        f"Rear mean/P95 {lidar_stats['rear']['mean_abs_us']:.1f}/{lidar_stats['rear']['p95_abs_us']:.1f} µs\n"
+        f"Near offset mean/P95 {lidar_stats['near']['mean_abs_us']:.1f}/{lidar_stats['near']['p95_abs_us']:.1f} µs; "
+        f"Front offset mean/P95 {lidar_stats['front']['mean_abs_us']:.1f}/{lidar_stats['front']['p95_abs_us']:.1f} µs\n"
+        f"Rear offset mean/P95 {lidar_stats['rear']['mean_abs_us']:.1f}/{lidar_stats['rear']['p95_abs_us']:.1f} µs\n"
         f"PTP locked: {locked_lidar_samples:,}/{total_lidar_samples:,} ({lidar_sync_fraction * 100:.1f}%)",
         transform=ax.transAxes,
         ha="right",
@@ -607,9 +607,9 @@ def main() -> None:
         linespacing=1.15,
         bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.78, "pad": 1.5},
     )
-    ax.text(0.02, 0.97, "(c) LiDAR PTP", transform=ax.transAxes,
-            ha="left", va="top", fontsize=7.0, fontweight="normal",
-            bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.78, "pad": 1.5})
+    ax.text(0.02, 1.02, "(c) LiDAR PTP", transform=ax.transAxes,
+            ha="left", va="bottom", fontsize=7.0, fontweight="normal",
+            clip_on=False)
     ax.set_xlabel("Elapsed time (s)")
     ax.set_ylabel("PTP offset (µs)")
     ax.set_xlim(0, duration_s)
@@ -621,7 +621,7 @@ def main() -> None:
     # on a second axis with a separate Yes/No scale.
     ax = axes[1, 1]
     ax.plot(tobii_t, tobii_offset_us, color=COLORS["purple"], lw=1.0,
-            label="Device–host midpoint")
+            label="Offset")
     ax.set_xlabel("Elapsed time (s)")
     ax.set_ylabel("Clock offset (µs)")
     ax.set_xlim(0, duration_s)
@@ -631,8 +631,8 @@ def main() -> None:
     ax.text(
         0.98,
         0.97,
-        f"|device–host midpoint| mean {np.mean(np.abs(tobii_offset_us)):.0f} µs\n"
-        f"|device–host midpoint| P95 {np.percentile(np.abs(tobii_offset_us), 95):.0f} µs\n"
+        f"Offset mean {np.mean(np.abs(tobii_offset_us)):.0f} µs\n"
+        f"Offset P95 {np.percentile(np.abs(tobii_offset_us), 95):.0f} µs\n"
         f"NTP synchronised: {tobii_sync_count}/{len(sync)} ({tobii_sync_fraction * 100:.1f}%)",
         transform=ax.transAxes,
         ha="right",
@@ -642,9 +642,9 @@ def main() -> None:
         linespacing=1.15,
         bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.78, "pad": 1.5},
     )
-    ax.text(0.02, 0.97, "(d) Tobii NTP", transform=ax.transAxes,
-            ha="left", va="top", fontsize=7.0, fontweight="normal",
-            bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.78, "pad": 1.5})
+    ax.text(0.02, 1.02, "(d) Tobii NTP", transform=ax.transAxes,
+            ha="left", va="bottom", fontsize=7.0, fontweight="normal",
+            clip_on=False)
 
     fig.suptitle("System-wide time synchronisation validation", fontsize=11, y=0.97)
     save_figure(fig, figures, "system_wide_time_synchronisation_validation")
