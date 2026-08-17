@@ -539,8 +539,8 @@ def main() -> None:
     ax.text(
         0.98,
         0.97,
-        f"|device–host offset| mean {np.mean(np.abs(c1_plot_offset_us)):.3f} µs\n"
-        f"|device–host offset| P95 {np.percentile(np.abs(c1_plot_offset_us), 95):.3f} µs\n"
+        f"|clock offset| mean {np.mean(np.abs(c1_plot_offset_us)):.3f} µs\n"
+        f"|clock offset| P95 {np.percentile(np.abs(c1_plot_offset_us), 95):.3f} µs\n"
         f"NTP synchronised: {chrony_sync_count}/{len(c1)} ({chrony_sync_fraction * 100:.1f}%)",
         transform=ax.transAxes,
         ha="right",
@@ -554,7 +554,7 @@ def main() -> None:
             ha="left", va="bottom", fontsize=7.0, fontweight="normal",
             clip_on=False)
     ax.set_xlabel("Elapsed time (s)")
-    ax.set_ylabel("Device–host offset (µs)")
+    ax.set_ylabel("Chrony-estimated clock offset (µs)")
     ax.set_xlim(0, duration_s)
 
     # (c) LiDAR PTP.  Status is represented explicitly in the annotation and
@@ -589,9 +589,9 @@ def main() -> None:
     ax.text(
         0.98,
         0.97,
-        f"Near |device–host| mean/P95 {lidar_stats['near']['mean_abs_us']:.1f}/{lidar_stats['near']['p95_abs_us']:.1f} µs\n"
-        f"Front |device–host| mean/P95 {lidar_stats['front']['mean_abs_us']:.1f}/{lidar_stats['front']['p95_abs_us']:.1f} µs\n"
-        f"Rear |device–host| mean/P95 {lidar_stats['rear']['mean_abs_us']:.1f}/{lidar_stats['rear']['p95_abs_us']:.1f} µs\n"
+        f"Near |slave–master| mean/P95 {lidar_stats['near']['mean_abs_us']:.1f}/{lidar_stats['near']['p95_abs_us']:.1f} µs\n"
+        f"Front |slave–master| mean/P95 {lidar_stats['front']['mean_abs_us']:.1f}/{lidar_stats['front']['p95_abs_us']:.1f} µs\n"
+        f"Rear |slave–master| mean/P95 {lidar_stats['rear']['mean_abs_us']:.1f}/{lidar_stats['rear']['p95_abs_us']:.1f} µs\n"
         f"PTP locked: {locked_lidar_samples:,}/{total_lidar_samples:,} ({lidar_sync_fraction * 100:.1f}%)",
         transform=ax.transAxes,
         ha="right",
@@ -605,7 +605,7 @@ def main() -> None:
             ha="left", va="bottom", fontsize=7.0, fontweight="normal",
             clip_on=False)
     ax.set_xlabel("Elapsed time (s)")
-    ax.set_ylabel("Device–host offset (µs)")
+    ax.set_ylabel("LiDAR slave–master clock offset (µs)")
     ax.set_xlim(0, duration_s)
     ax.legend(frameon=True, framealpha=0.78, loc="lower left",
               bbox_to_anchor=(0.01, 0.02), ncol=1, fontsize=6.2,
@@ -617,9 +617,9 @@ def main() -> None:
     ax = axes[1, 1]
     tobii_plot_offset_us = tobii_offset_us
     ax.plot(tobii_t, tobii_plot_offset_us, color=COLORS["vermillion"], lw=1.0,
-            label="Device–host offset")
+            label="API midpoint difference")
     ax.set_xlabel("Elapsed time (s)")
-    ax.set_ylabel("Device–host offset (µs)")
+    ax.set_ylabel("Tobii API midpoint difference (µs)")
     ax.set_xlim(0, duration_s)
     sync = np.asarray([1.0 if row.get("ntp_is_synchronized") == "True" else 0.0 for row in tobii])
     tobii_sync_count = int(np.sum(sync))
@@ -627,8 +627,8 @@ def main() -> None:
     ax.text(
         0.98,
         0.97,
-        f"|device–host offset| mean {np.mean(np.abs(tobii_plot_offset_us)):.0f} µs\n"
-        f"|device–host offset| P95 {np.percentile(np.abs(tobii_plot_offset_us), 95):.0f} µs\n"
+        f"|API midpoint difference| mean {np.mean(np.abs(tobii_plot_offset_us)):.0f} µs\n"
+        f"|API midpoint difference| P95 {np.percentile(np.abs(tobii_plot_offset_us), 95):.0f} µs\n"
         f"NTP synchronised: {tobii_sync_count}/{len(sync)} ({tobii_sync_fraction * 100:.1f}%)",
         transform=ax.transAxes,
         ha="right",
@@ -711,14 +711,14 @@ mismatch should be resolved or documented before publication.
     (output / "figure_caption.txt").write_text(
         "System-wide time synchronisation validation from a 30-minute recording. "
         "(a) Logger coverage and the common all-stream overlap. (b) Computer 1–2 "
-        "signed device-host offset relative to the Computer 2 local reference; "
-        "the panel annotation gives mean and P95 absolute magnitudes. (c) "
-        "Vendor-reported PTP lock state and signed device-host timing fields for "
-        "the near, front and rear LiDARs. (d) Tobii Glasses 3 signed device-host "
-        "midpoint offset; the recorded NTP synchronisation count is reported in "
+        "signed Chrony-estimated clock offset relative to the Computer 2 local "
+        "reference; the panel annotation gives mean and P95 absolute magnitudes. "
+        "(c) Vendor-reported PTP lock state and signed LiDAR slave–master clock "
+        "offsets for the near, front and rear LiDARs. (d) Tobii Glasses 3 signed "
+        "API midpoint difference; the recorded NTP synchronisation count is reported in "
         "the panel annotation. All "
         "horizontal axes use elapsed seconds from the earliest logger sample. "
-        "Panels (b)–(d) plot signed device-host offsets in microseconds (µs); "
+        "Panels (b)–(d) plot signed values in microseconds (µs); "
         "the mean and P95 annotations are absolute magnitudes. Bpearl "
         "time_sync_data and Helios ptp_master_offset are treated as nanoseconds "
         "and divided by 1000; the Tobii API value is recorded in milliseconds "
