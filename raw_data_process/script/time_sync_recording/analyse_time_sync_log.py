@@ -349,7 +349,7 @@ def main() -> None:
     # Coverage figure.
     labels = list(all_streams)
     fig, ax = plt.subplots(figsize=(7.2, 4.8))
-    colors = [COLORS["blue"], COLORS["green"], COLORS["orange"], COLORS["orange"], COLORS["orange"], COLORS["purple"]]
+    colors = [COLORS["blue"], COLORS["green"], COLORS["orange"], COLORS["orange"], COLORS["purple"], COLORS["vermillion"]]
     for index, (label, rows) in enumerate(all_streams.items()):
         start = (parse_time(rows[0]) - global_start).total_seconds()
         end = (parse_time(rows[-1]) - global_start).total_seconds()
@@ -397,7 +397,7 @@ def main() -> None:
     tobii_t = elapsed_from(tobii, global_start)
     tobii_offset_us = tobii_offset * 1000.0
     fig, axes = plt.subplots(2, 1, figsize=(7.2, 5.0), sharex=True)
-    axes[0].plot(tobii_t, tobii_offset_us, color=COLORS["purple"], lw=1.35)
+    axes[0].plot(tobii_t, tobii_offset_us, color=COLORS["vermillion"], lw=1.35)
     axes[0].set_ylabel("Device − host midpoint (µs)")
     axes[0].set_title("Tobii Glasses 3 synchronisation status and API time comparison")
     axes[0].grid(alpha=0.25)
@@ -412,7 +412,7 @@ def main() -> None:
 
     # LiDAR status and raw vendor field.
     fig, axes = plt.subplots(2, 1, figsize=(7.2, 5.8), sharex=True)
-    palette = {"near": COLORS["blue"], "front": COLORS["orange"], "rear": COLORS["green"]}
+    palette = {"near": COLORS["blue"], "front": COLORS["orange"], "rear": COLORS["purple"]}
     lidar_plot_labels = {"near": "Bpearl near", "front": "Helios front", "rear": "Helios rear"}
     status_y = {"near": 1.08, "front": 1.0, "rear": 0.92}
     for label, rows in lidar_by_sensor.items():
@@ -499,8 +499,8 @@ def main() -> None:
         "Computer 2 PTP logger": COLORS["black"],
         "Near LiDAR HTTP status": COLORS["orange"],
         "Front LiDAR HTTP status": COLORS["green"],
-        "Rear LiDAR HTTP status": COLORS["vermillion"],
-        "Tobii time logger": COLORS["purple"],
+        "Rear LiDAR HTTP status": COLORS["purple"],
+        "Tobii time logger": COLORS["vermillion"],
     }
     for index, (name, rows) in enumerate(all_streams.items()):
         start = (parse_time(rows[0]) - global_start).total_seconds()
@@ -563,7 +563,7 @@ def main() -> None:
     # (c) LiDAR PTP.  Status is represented explicitly in the annotation and
     # in each legend entry; the curves show the vendor-reported timing field.
     ax = axes[1, 0]
-    lidar_palette = {"near": COLORS["orange"], "front": COLORS["green"], "rear": COLORS["vermillion"]}
+    lidar_palette = {"near": COLORS["orange"], "front": COLORS["green"], "rear": COLORS["purple"]}
     lidar_labels = {
         "near": "Near Bpearl (Locked)",
         "front": "Front Helios (Locked)",
@@ -619,7 +619,7 @@ def main() -> None:
     # on a second axis with a separate Yes/No scale.
     ax = axes[1, 1]
     tobii_plot_offset_us = np.abs(tobii_offset_us)
-    ax.plot(tobii_t, tobii_plot_offset_us, color=COLORS["purple"], lw=1.0,
+    ax.plot(tobii_t, tobii_plot_offset_us, color=COLORS["vermillion"], lw=1.0,
             label="Absolute offset")
     ax.set_xlabel("Elapsed time (s)")
     ax.set_ylabel("Absolute offset (µs)")
