@@ -597,7 +597,6 @@ def main() -> None:
         f"Near mean/P95 {lidar_stats['near']['mean_abs_us']:.1f}/{lidar_stats['near']['p95_abs_us']:.1f} µs; "
         f"Front {lidar_stats['front']['mean_abs_us']:.1f}/{lidar_stats['front']['p95_abs_us']:.1f} µs\n"
         f"Rear mean/P95 {lidar_stats['rear']['mean_abs_us']:.1f}/{lidar_stats['rear']['p95_abs_us']:.1f} µs\n"
-        "Bpearl PTP-E2E-L4 (domain 0); Helios TimeSyncSrc=PTP-E2E\n"
         f"PTP locked: {locked_lidar_samples:,}/{total_lidar_samples:,} ({lidar_sync_fraction * 100:.1f}%)",
         transform=ax.transAxes,
         ha="right",
