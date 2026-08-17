@@ -499,7 +499,7 @@ def main() -> None:
         "Computer 2 PTP logger": COLORS["black"],
         "Near LiDAR HTTP status": COLORS["orange"],
         "Front LiDAR HTTP status": COLORS["green"],
-        "Rear LiDAR HTTP status": COLORS["blue"],
+        "Rear LiDAR HTTP status": COLORS["vermillion"],
         "Tobii time logger": COLORS["purple"],
     }
     for index, (name, rows) in enumerate(all_streams.items()):
@@ -563,7 +563,7 @@ def main() -> None:
     # (c) LiDAR PTP.  Status is represented explicitly in the annotation and
     # in each legend entry; the curves show the vendor-reported timing field.
     ax = axes[1, 0]
-    lidar_palette = {"near": COLORS["orange"], "front": COLORS["green"], "rear": COLORS["blue"]}
+    lidar_palette = {"near": COLORS["orange"], "front": COLORS["green"], "rear": COLORS["vermillion"]}
     lidar_labels = {
         "near": "Near Bpearl (Locked)",
         "front": "Front Helios (Locked)",
