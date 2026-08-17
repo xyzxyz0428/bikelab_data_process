@@ -499,7 +499,7 @@ def main() -> None:
         "Computer 2 PTP logger": COLORS["black"],
         "Near LiDAR HTTP status": COLORS["orange"],
         "Front LiDAR HTTP status": COLORS["green"],
-        "Rear LiDAR HTTP status": COLORS["green"],
+        "Rear LiDAR HTTP status": COLORS["blue"],
         "Tobii time logger": COLORS["purple"],
     }
     for index, (name, rows) in enumerate(all_streams.items()):
@@ -610,8 +610,9 @@ def main() -> None:
     ax.set_xlabel("Elapsed time (s)")
     ax.set_ylabel("Absolute offset (µs)")
     ax.set_xlim(0, duration_s)
-    ax.legend(frameon=True, framealpha=0.78, loc="lower left",
-              ncol=1, fontsize=6.2, borderpad=0.3, handlelength=1.6)
+    ax.legend(frameon=True, framealpha=0.78, loc="center left",
+              bbox_to_anchor=(0.01, 0.55), ncol=1, fontsize=6.2,
+              borderpad=0.3, handlelength=1.6)
 
     # (d) Tobii NTP.  Only the device-host offset is plotted.  The recorded
     # NTP state remains in the annotation and summary tables, but is not drawn
