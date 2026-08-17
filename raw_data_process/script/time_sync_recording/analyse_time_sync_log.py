@@ -33,7 +33,6 @@ if str(PAPER_STYLE_DIR) not in sys.path:
 from paper_style import (  # noqa: E402
     COLORS,
     apply_paper_style,
-    panel_label,
     save_figure as save_paper_figure,
 )
 
@@ -376,19 +375,20 @@ def main() -> None:
     ax.set_ylim(-0.5, len(labels) - 0.02)
     save_figure(fig, figures, "synchronisation_recording_coverage")
 
-    # Computer 1/2 chrony figure.
+    # Computer 1/2 NTP figure. Chrony is the host-side implementation, while
+    # NTP is the protocol reported in the figures.
     c1_t = elapsed_from(c1, global_start)
     fig, axes = plt.subplots(2, 1, figsize=(7.2, 5.4), sharex=True)
     axes[0].plot(c1_t, c1_offset * 1e6, color=COLORS["blue"], lw=1.35, label="Estimated system offset")
     axes[0].plot(c1_t, c1_last * 1e6, color=COLORS["orange"], lw=1.2, alpha=0.9, label="Last clock update")
     axes[0].axhline(0, color=COLORS["black"], lw=0.8)
     axes[0].set_ylabel("Offset (µs)")
-    axes[0].set_title("Computer 1 synchronisation to Computer 2 (chrony)")
+    axes[0].set_title("Computer 1 synchronisation to Computer 2 (NTP)")
     axes[0].legend(frameon=False, ncol=2, loc="upper right")
     axes[1].plot(c1_t, c1_rms * 1e6, color=COLORS["green"], lw=1.35, label="RMS offset")
     axes[1].plot(c1_t, c1_disp * 1e6, color=COLORS["purple"], lw=1.2, label="Root dispersion")
     axes[1].set_xlabel("Elapsed time (s)")
-    axes[1].set_ylabel("Chrony estimate (µs)")
+    axes[1].set_ylabel("NTP estimate (µs)")
     axes[1].legend(frameon=False, ncol=2, loc="upper right")
     save_figure(fig, figures, "computer1_computer2_chrony_offset")
 
@@ -481,13 +481,13 @@ def main() -> None:
     # clock-offset axes use microseconds; the Tobii API value is converted from
     # milliseconds by multiplying by 1000.
     duration_s = (global_end - global_start).total_seconds()
-    fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.65))
-    fig.subplots_adjust(left=0.09, right=0.96, bottom=0.10, top=0.90, wspace=0.30, hspace=0.42)
+    fig, axes = plt.subplots(2, 2, figsize=(7.2, 6.35))
+    fig.subplots_adjust(left=0.09, right=0.96, bottom=0.22, top=0.80, wspace=0.30, hspace=0.78)
 
     # (a) Logger coverage.
     ax = axes[0, 0]
     coverage_labels = {
-        "Computer 1 chrony logger": "C1 chrony",
+        "Computer 1 chrony logger": "C1 NTP",
         "Computer 2 PTP logger": "C2 PTP",
         "Near LiDAR HTTP status": "Near LiDAR",
         "Front LiDAR HTTP status": "Front LiDAR",
@@ -522,11 +522,12 @@ def main() -> None:
     ax.set_xlim(0, duration_s)
     ax.set_ylim(-0.6, len(all_streams) - 0.35)
     ax.grid(axis="x")
-    panel_label(ax, "(a)")
-    ax.set_title("Recording coverage")
+    ax.text(0.0, 1.04, "(a) Recording coverage", transform=ax.transAxes,
+            ha="left", va="bottom", fontsize=9.5, fontweight="bold",
+            clip_on=False)
 
-    # (b) C1--C2 chrony.  The signed estimate is plotted and the robust
-    # absolute-offset summary is printed in the panel for direct reporting.
+    # (b) C1--C2 NTP. The signed estimate is plotted; the label above the
+    # axes reports the absolute-offset mean and P95.
     ax = axes[0, 1]
     c1_t_global = elapsed_from(c1, global_start)
     ax.plot(c1_t_global, c1_offset * 1e6, color=COLORS["blue"], lw=1.0,
@@ -539,18 +540,26 @@ def main() -> None:
                lw=0.8, ls="--", alpha=0.8)
     chrony_sync_count = sum(str(row.get("ntp_synchronized", "")).lower() in {"yes", "true", "1"} for row in c1)
     chrony_sync_fraction = chrony_sync_count / len(c1) if c1 else 0.0
-    ax.text(0.98, 0.95,
-            f"|offset| median {np.median(abs_offset):.3f} µs\n"
-            f"P95 {np.percentile(abs_offset, 95):.3f} µs\n"
-            f"chrony synchronized: {chrony_sync_fraction * 100:.1f}%",
-            transform=ax.transAxes, ha="right", va="top", fontsize=7.2,
-            bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.78})
+    ax.text(
+        0.0,
+        1.04,
+        f"(b) Computer 1–2 NTP\n"
+        f"|offset| mean {np.mean(abs_offset):.3f} µs\n"
+        f"|offset| P95 {np.percentile(abs_offset, 95):.3f} µs\n"
+        f"NTP synchronised: {chrony_sync_count}/{len(c1)} ({chrony_sync_fraction * 100:.1f}%)",
+        transform=ax.transAxes,
+        ha="left",
+        va="bottom",
+        fontsize=7.3,
+        fontweight="bold",
+        linespacing=1.15,
+        clip_on=False,
+    )
     ax.set_xlabel("Elapsed time (s)")
     ax.set_ylabel("Clock offset (µs)")
     ax.set_xlim(0, duration_s)
-    ax.legend(frameon=False, loc="lower left", fontsize=7.0)
-    panel_label(ax, "(b)")
-    ax.set_title("Computer 1–2 chrony")
+    ax.legend(frameon=False, loc="upper left", bbox_to_anchor=(0.0, -0.26),
+              ncol=2, fontsize=6.8, borderaxespad=0.0)
 
     # (c) LiDAR PTP.  Status is represented explicitly in the annotation and
     # in each legend entry; the curves show the vendor-reported timing field.
@@ -561,30 +570,48 @@ def main() -> None:
         "front": "Front Helios (Locked)",
         "rear": "Rear Helios (Locked)",
     }
-    lidar_p95_text = []
+    lidar_stats = {}
     for label, rows in lidar_by_sensor.items():
         t = elapsed_from(rows, global_start)
         raw_ns = numbers(rows, "ptp_master_offset_raw")
         count = min(t.size, raw_ns.size)
         if count:
-            ax.plot(t[:count], raw_ns[:count] / 1000.0,
+            offset_us = raw_ns[:count] / 1000.0
+            ax.plot(t[:count], offset_us,
                     color=lidar_palette[label], lw=0.9, label=lidar_labels[label])
-            lidar_p95_text.append(
-                f"{label}: {np.percentile(np.abs(raw_ns[:count] / 1000.0), 95):.1f} µs"
-            )
+            lidar_stats[label] = {
+                "mean_abs_us": float(np.mean(np.abs(offset_us))),
+                "p95_abs_us": float(np.percentile(np.abs(offset_us), 95)),
+            }
     total_lidar_samples = sum(len(rows) for rows in lidar_by_sensor.values())
-    ax.text(0.98, 0.95, f"PTP status: Locked for all {total_lidar_samples:,} samples\n"
-            "Bpearl: PTP-E2E-L4, domain 0\n"
-            "Helios: TimeSyncSrc=PTP-E2E\n"
-            "P95 absolute offset: " + ", ".join(lidar_p95_text),
-            transform=ax.transAxes, ha="right", va="top", fontsize=7.0,
-            bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.78})
+    locked_lidar_samples = sum(
+        row.get("ptp_status") == "Locked"
+        for rows in lidar_by_sensor.values()
+        for row in rows
+    )
+    lidar_sync_fraction = locked_lidar_samples / total_lidar_samples if total_lidar_samples else 0.0
+    ax.text(
+        0.0,
+        1.04,
+        "(c) LiDAR PTP\n"
+        f"Near mean/P95 {lidar_stats['near']['mean_abs_us']:.1f}/{lidar_stats['near']['p95_abs_us']:.1f} µs; "
+        f"Front {lidar_stats['front']['mean_abs_us']:.1f}/{lidar_stats['front']['p95_abs_us']:.1f} µs\n"
+        f"Rear mean/P95 {lidar_stats['rear']['mean_abs_us']:.1f}/{lidar_stats['rear']['p95_abs_us']:.1f} µs\n"
+        "Bpearl PTP-E2E-L4 (domain 0); Helios TimeSyncSrc=PTP-E2E\n"
+        f"PTP locked: {locked_lidar_samples:,}/{total_lidar_samples:,} ({lidar_sync_fraction * 100:.1f}%)",
+        transform=ax.transAxes,
+        ha="left",
+        va="bottom",
+        fontsize=6.8,
+        fontweight="bold",
+        linespacing=1.15,
+        clip_on=False,
+    )
     ax.set_xlabel("Elapsed time (s)")
     ax.set_ylabel("PTP offset (µs)")
     ax.set_xlim(0, duration_s)
-    ax.legend(frameon=False, loc="lower left", fontsize=7.0)
-    panel_label(ax, "(c)")
-    ax.set_title("LiDAR PTP lock and timing")
+    ax.legend(frameon=False, loc="upper left", bbox_to_anchor=(0.0, -0.26),
+              ncol=3, fontsize=6.8, borderaxespad=0.0)
 
     # (d) Tobii NTP.  The state step is kept on a secondary axis so the timing
     # diagnostic and the synchronisation result are visible without mixing
@@ -604,14 +631,21 @@ def main() -> None:
     sync_ax.set_ylabel("NTP synchronized")
     tobii_sync_count = int(np.sum(sync))
     tobii_sync_fraction = tobii_sync_count / len(sync) if len(sync) else 0.0
-    ax.text(0.98, 0.95,
-            f"synchronized: {tobii_sync_count}/{len(sync)} ({tobii_sync_fraction * 100:.1f}%)\n"
-            f"midpoint median {np.median(tobii_offset_us):.0f} µs\n"
-            f"P95 {np.percentile(tobii_offset_us, 95):.0f} µs",
-            transform=ax.transAxes, ha="right", va="top", fontsize=7.0,
-            bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.78})
-    panel_label(ax, "(d)")
-    ax.set_title("Tobii NTP state and midpoint diagnostic")
+    ax.text(
+        0.0,
+        1.04,
+        f"(d) Tobii NTP\n"
+        f"|device–host midpoint| mean {np.mean(np.abs(tobii_offset_us)):.0f} µs\n"
+        f"|device–host midpoint| P95 {np.percentile(np.abs(tobii_offset_us), 95):.0f} µs\n"
+        f"NTP synchronised: {tobii_sync_count}/{len(sync)} ({tobii_sync_fraction * 100:.1f}%)",
+        transform=ax.transAxes,
+        ha="left",
+        va="bottom",
+        fontsize=7.3,
+        fontweight="bold",
+        linespacing=1.15,
+        clip_on=False,
+    )
 
     fig.suptitle("System-wide time synchronisation validation", fontsize=11, y=0.97)
     save_figure(fig, figures, "system_wide_time_synchronisation_validation")
@@ -681,9 +715,9 @@ mismatch should be resolved or documented before publication.
     (output / "assessment.md").write_text(report, encoding="utf-8")
     (output / "figure_caption.txt").write_text(
         "System-wide time synchronisation validation from a 30-minute recording. "
-        "(a) Logger coverage and the common all-stream overlap. (b) Computer 1 "
-        "chrony offset relative to the Computer 2 local reference, including the "
-        "median and P95 absolute offset. (c) Vendor-reported PTP lock state and "
+        "(a) Logger coverage and the common all-stream overlap. (b) Computer 1–2 "
+        "NTP offset relative to the Computer 2 local reference, including the "
+        "mean and P95 absolute offset. (c) Vendor-reported PTP lock state and "
         "timing fields for the near, front and rear LiDARs. (d) Tobii Glasses 3 "
         "NTP synchronisation state and the device-host midpoint diagnostic. All "
         "horizontal axes use elapsed seconds from the earliest logger sample. "
