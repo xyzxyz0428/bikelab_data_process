@@ -23,7 +23,7 @@ Use `--help` before processing a new recording.
 python3 raw_data_process/script/cut_bikelab_streams.py --help
 
 # Merge trimmed tables into one workbook
-python3 raw_data_process/script/merge_bikelab_csvs_to_xlsx_v2.py --help
+python3 raw_data_process/script/merge_bikelab_csvs_to_xlsx.py --help
 
 # Dataset validation
 python3 data_analysis/scripts/gnss_imu_technical_validation.py --help
